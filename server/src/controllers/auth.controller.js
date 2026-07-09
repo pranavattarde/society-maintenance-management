@@ -1,12 +1,10 @@
 const { registerUser, loginUser, findUserById } = require('../services/auth.service');
 
 /**
- * Auth Controller — Phase 2 stub.
+ * Auth Controller
  *
- * Controllers are intentionally thin:
- * they parse the request, delegate to the service, and send the response.
- *
- * Implemented in Phase 2 — Authentication.
+ * Intentionally thin — each function parses the request,
+ * delegates all business logic to auth.service.js, and responds.
  */
 
 async function register(req, res, next) {
