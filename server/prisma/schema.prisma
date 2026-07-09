@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  RESIDENT
+  ADMIN
+}
+
+enum Status {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Category {
+  PLUMBING
+  ELECTRICAL
+  CLEANING
+  SECURITY
+  LIFT
+  PARKING
+  OTHER
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  password   String
+  role       Role     @default(RESIDENT)
+  flatNumber String
+  phone      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  complaints    Complaint[]        @relation("ResidentComplaints")
+  statusChanges ComplaintHistory[]
+  notices       Notice[]
+
+  @@map("users")
+}
+
+model Complaint {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    Category
+  priority    Priority
+  status      Status   @default(OPEN)
+  photoUrl    String?
+  residentId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resident User              @relation("ResidentComplaints", fields: [residentId], references: [id])
+  history  ComplaintHistory[]
+
+  @@map("complaints")
+}
+
+/// Append-only audit log. Every status transition creates one record.
+/// Records are never updated or deleted.
+model ComplaintHistory {
+  id          String   @id @default(cuid())
+  complaintId String
+  changedById String
+  fromStatus  Status
+  toStatus    Status
+  remark      String?
+  createdAt   DateTime @default(now())
+
+  complaint Complaint @relation(fields: [complaintId], references: [id])
+  changedBy User      @relation(fields: [changedById], references: [id])
+
+  @@map("complaint_history")
+}
+
+model Notice {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  isPinned  Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User @relation(fields: [authorId], references: [id])
+
+  @@map("notices")
+}
