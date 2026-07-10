@@ -2,7 +2,7 @@ const { Readable } = require('stream');
 const cloudinary = require('../config/cloudinary');
 const prisma = require('../config/db');
 const ApiError = require('../utils/ApiError');
-const { ROLES, STATUS, CATEGORY } = require('../utils/constants');
+const { ROLES, STATUS, CATEGORY, ALLOWED_STATUS_TRANSITIONS } = require('../utils/constants');
 
 // ─── Private Helpers ──────────────────────────────────────────────────────────
 
@@ -145,14 +145,13 @@ async function listComplaints(filters, user) {
 }
 
 /**
- * Returns a single complaint by ID.
+ * Returns a single complaint by ID, including the full status history.
  *
  * Access control:
  *   - ADMIN:    can view any complaint
  *   - RESIDENT: can view only their own (403 otherwise)
  *
- * History is intentionally excluded in this phase.
- * It will be added in Phase 6 — Admin Functionality.
+ * History is ordered oldest-first so the timeline renders chronologically.
  *
  * @param {string} id
  * @param {{ id: string, role: string }} user
@@ -173,6 +172,17 @@ async function getComplaintById(id, user) {
       createdAt: true,
       updatedAt: true,
       resident: { select: { id: true, name: true, flatNumber: true } },
+      history: {
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          fromStatus: true,
+          toStatus: true,
+          remark: true,
+          createdAt: true,
+          changedBy: { select: { name: true } },
+        },
+      },
     },
   });
 
@@ -189,11 +199,66 @@ async function getComplaintById(id, user) {
 }
 
 /**
- * Updates a complaint's status and appends an audit history record.
- * Implemented in Phase 6 — Admin Functionality.
+ * Updates a complaint's status and creates an immutable audit history record.
+ *
+ * Transition rules are enforced using ALLOWED_STATUS_TRANSITIONS:
+ *   OPEN       -> IN_PROGRESS | RESOLVED
+ *   IN_PROGRESS-> RESOLVED
+ *   RESOLVED   -> (terminal — no further transitions)
+ *
+ * The update and history insert are wrapped in an interactive transaction so
+ * that a partial failure leaves no inconsistent state.
+ *
+ * After the transaction, the full complaint (including the new history entry)
+ * is fetched and returned so the controller can respond with the latest state.
+ *
+ * @param {string} id
+ * @param {{ status: string, remark?: string }} data - Validated request body
+ * @param {{ id: string, role: string }} admin - From authenticate middleware
+ * @returns {object} Updated complaint with full history
+ * @throws {ApiError} 404 — not found | 400 — invalid transition
  */
 async function updateComplaintStatus(id, data, admin) {
-  throw new Error('Not implemented');
+  const { status: newStatus, remark } = data;
+
+  // Load current status for transition validation
+  const existing = await prisma.complaint.findUnique({
+    where: { id },
+    select: { status: true },
+  });
+
+  if (!existing) {
+    throw new ApiError(404, 'Complaint not found');
+  }
+
+  const allowed = ALLOWED_STATUS_TRANSITIONS[existing.status] || [];
+  if (!allowed.includes(newStatus)) {
+    throw new ApiError(
+      400,
+      `Status cannot transition from ${existing.status} to ${newStatus}`
+    );
+  }
+
+  // Atomically update the complaint and append the history record
+  await prisma.$transaction(async (tx) => {
+    await tx.complaint.update({
+      where: { id },
+      data: { status: newStatus },
+    });
+
+    await tx.complaintHistory.create({
+      data: {
+        complaintId: id,
+        changedById: admin.id,
+        fromStatus: existing.status,
+        toStatus: newStatus,
+        remark: remark?.trim() || null,
+      },
+    });
+  });
+
+  // Return the full complaint with updated history for the API response
+  return getComplaintById(id, admin);
 }
 
 /**

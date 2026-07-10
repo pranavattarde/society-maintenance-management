@@ -43,11 +43,22 @@ export const PRIORITY_LABELS = Object.freeze({
 });
 
 export const CATEGORY_LABELS = Object.freeze({
-  PLUMBING: 'Plumbing',
+  PLUMBING:   'Plumbing',
   ELECTRICAL: 'Electrical',
-  CLEANING: 'Cleaning',
-  SECURITY: 'Security',
-  LIFT: 'Lift / Elevator',
-  PARKING: 'Parking',
-  OTHER: 'Other',
+  CLEANING:   'Cleaning',
+  SECURITY:   'Security',
+  LIFT:       'Lift / Elevator',
+  PARKING:    'Parking',
+  OTHER:      'Other',
+});
+
+/**
+ * Valid forward transitions for complaint status.
+ * RESOLVED is terminal — no further transitions are allowed.
+ * Mirrors server/src/utils/constants.js exactly.
+ */
+export const ALLOWED_STATUS_TRANSITIONS = Object.freeze({
+  OPEN:        ['IN_PROGRESS', 'RESOLVED'],
+  IN_PROGRESS: ['RESOLVED'],
+  RESOLVED:    [],
 });
