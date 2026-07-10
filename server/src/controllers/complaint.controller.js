@@ -6,9 +6,9 @@ const {
 } = require('../services/complaint.service');
 
 /**
- * Complaint Controller — Phase 3 stub.
+ * Complaint Controller
  *
- * Implemented in Phase 3 — Complaint Management.
+ * Thin wrappers — each function delegates to complaint.service.js and responds.
  */
 
 async function create(req, res, next) {
