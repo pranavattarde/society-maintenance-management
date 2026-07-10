@@ -1,0 +1,151 @@
+/* ============================================================
+   Auth Pages — Shared Styles
+   Used by Login.jsx and Register.jsx
+   ============================================================ */
+
+/* ── Page Shell ──────────────────────────────────────────────────────────── */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #e8f0fe 60%, #f0f4ff 100%);
+  padding: var(--space-4);
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: white;
+  border-radius: var(--radius-xl);
+  /* Soft primary-tinted shadow — professional, not harsh */
+  box-shadow:
+    0 20px 60px -10px rgb(37 99 235 / 0.12),
+    0 4px 20px -4px rgb(0 0 0 / 0.06);
+  padding: var(--space-10) var(--space-8);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.auth-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.auth-logo {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: var(--space-4);
+  display: block;
+}
+
+.auth-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.auth-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+/* ── Form ────────────────────────────────────────────────────────────────── */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── Password field with Show / Hide toggle ──────────────────────────────── */
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper .form-input {
+  padding-right: 4.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  font-family: var(--font-family);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.password-toggle:hover {
+  color: var(--color-primary-dark);
+}
+
+/* ── API Error Alert ─────────────────────────────────────────────────────── */
+
+.auth-api-error {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-light);
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+  line-height: 1.5;
+}
+
+/* ── Submit Button ───────────────────────────────────────────────────────── */
+
+.auth-submit {
+  width: 100%;
+  padding: var(--space-3);
+  font-size: var(--font-size-base);
+  margin-top: var(--space-2);
+}
+
+/* ── Divider + Footer ────────────────────────────────────────────────────── */
+
+.auth-divider {
+  border: none;
+  border-top: 1px solid var(--color-gray-100);
+  margin: var(--space-6) 0 0;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.auth-footer a {
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--space-8) var(--space-5);
+  }
+}
