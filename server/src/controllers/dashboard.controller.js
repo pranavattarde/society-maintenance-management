@@ -1,18 +1,18 @@
-const { ROLES } = require('../utils/constants');
+const { getDashboardStats } = require('../services/dashboard.service');
 
 /**
- * Dashboard Controller — Phase 4 stub.
+ * Dashboard Controller
  *
- * Returns role-scoped statistics. The response shape differs by role:
- *   RESIDENT — byStatus counts + overdueCount (scoped to their complaints)
- *   ADMIN    — byStatus + byCategory counts + overdueCount (all complaints)
+ * Returns role-scoped statistics via a single endpoint.
+ * The service determines the response shape based on req.user.role:
  *
- * Implemented in Phase 4 — Remaining Features.
+ *   RESIDENT — { role, totalComplaints, byStatus }
+ *   ADMIN    — { role, totalComplaints, byStatus, byCategory, overdueCount }
  */
-
 async function getDashboard(req, res, next) {
   try {
-    res.status(501).json({ message: 'Not implemented' });
+    const stats = await getDashboardStats(req.user);
+    res.status(200).json(stats);
   } catch (err) {
     next(err);
   }
