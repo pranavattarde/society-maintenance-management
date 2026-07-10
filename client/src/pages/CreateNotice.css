@@ -1,0 +1,33 @@
+/* ============================================================
+   CreateNotice Page Styles
+   ============================================================ */
+
+/* ── Back navigation link ────────────────────────────────────────────────── */
+
+.notice-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-600);
+  text-decoration: none;
+  margin-bottom: var(--space-6);
+  transition: color 0.15s;
+}
+
+.notice-back-link:hover {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/* ── Form actions row ────────────────────────────────────────────────────── */
+
+.notice-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-gray-100);
+}
