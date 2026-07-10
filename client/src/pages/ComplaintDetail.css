@@ -1,0 +1,94 @@
+/* ============================================================
+   ComplaintDetail Page Styles
+   ============================================================ */
+
+/* ── Back navigation link ────────────────────────────────────────────────── */
+
+.complaint-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-600);
+  text-decoration: none;
+  margin-bottom: var(--space-6);
+  transition: color 0.15s;
+}
+
+.complaint-back-link:hover {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/* ── Badges row ──────────────────────────────────────────────────────────── */
+
+.complaint-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+/* ── Info grid — category / dates / resident ─────────────────────────────── */
+
+.complaint-detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-5);
+}
+
+.complaint-detail-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.complaint-detail-info-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.complaint-detail-info-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-800);
+  font-weight: 500;
+}
+
+/* ── Section cards ───────────────────────────────────────────────────────── */
+
+.complaint-detail-section {
+  margin-bottom: var(--space-4);
+}
+
+.complaint-detail-section-title {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+.complaint-detail-text {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-700);
+  line-height: 1.75;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* ── Attached photo ──────────────────────────────────────────────────────── */
+
+.complaint-detail-photo {
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  background: var(--color-gray-50);
+  display: block;
+}
