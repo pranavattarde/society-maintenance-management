@@ -1,5 +1,7 @@
 const prisma = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const { ROLES } = require('../utils/constants');
+const { sendNoticeEmail } = require('./email.service');
 
 // ─── Shared Select Shape ──────────────────────────────────────────────────────
 // Single source for the fields returned by every notice query.
@@ -105,11 +107,29 @@ async function togglePin(id) {
 
   if (!notice) throw new ApiError(404, 'Notice not found');
 
-  return prisma.notice.update({
+  const willBePinned = !notice.isPinned;
+
+  const updated = await prisma.notice.update({
     where: { id },
-    data: { isPinned: !notice.isPinned },
+    data: { isPinned: willBePinned },
     select: NOTICE_SELECT,
   });
+
+  // If the notice is newly pinned, send email to all residents
+  if (willBePinned) {
+    prisma.user.findMany({
+      where: { role: ROLES.RESIDENT },
+      select: { name: true, email: true },
+    }).then((residents) => {
+      sendNoticeEmail(residents, updated).catch((err) => {
+        console.error('[email] Notice email notification failed:', err.message);
+      });
+    }).catch((err) => {
+      console.error('[email] Failed to fetch residents for notice notification:', err.message);
+    });
+  }
+
+  return updated;
 }
 
 /**

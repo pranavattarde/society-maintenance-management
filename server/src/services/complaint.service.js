@@ -3,6 +3,7 @@ const cloudinary = require('../config/cloudinary');
 const prisma = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { ROLES, STATUS, CATEGORY, ALLOWED_STATUS_TRANSITIONS } = require('../utils/constants');
+const { sendStatusUpdateEmail } = require('./email.service');
 
 // ─── Private Helpers ──────────────────────────────────────────────────────────
 
@@ -221,10 +222,14 @@ async function getComplaintById(id, user) {
 async function updateComplaintStatus(id, data, admin) {
   const { status: newStatus, remark } = data;
 
-  // Load current status for transition validation
+  // Load current status + resident contact details for email notification
   const existing = await prisma.complaint.findUnique({
     where: { id },
-    select: { status: true },
+    select: {
+      status: true,
+      title: true,
+      resident: { select: { name: true, email: true } },
+    },
   });
 
   if (!existing) {
@@ -255,6 +260,17 @@ async function updateComplaintStatus(id, data, admin) {
         remark: remark?.trim() || null,
       },
     });
+  });
+
+  // Fire-and-forget: notify the resident that their complaint status changed.
+  // Not awaited — email failure does not block or delay the API response.
+  sendStatusUpdateEmail(
+    existing.resident,
+    { id, title: existing.title },
+    newStatus,
+    remark?.trim() || null
+  ).catch((err) => {
+    console.error('[email] Status update notification failed:', err.message);
   });
 
   // Return the full complaint with updated history for the API response
