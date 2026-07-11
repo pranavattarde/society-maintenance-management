@@ -265,6 +265,11 @@ img {
   color: var(--color-priority-high);
 }
 
+.badge-danger {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
 /* ── Alerts ──────────────────────────────────────────────────────────────── */
 
 .alert {

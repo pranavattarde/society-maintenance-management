@@ -2,10 +2,26 @@ const { Readable } = require('stream');
 const cloudinary = require('../config/cloudinary');
 const prisma = require('../config/db');
 const ApiError = require('../utils/ApiError');
-const { ROLES, STATUS, CATEGORY, ALLOWED_STATUS_TRANSITIONS } = require('../utils/constants');
+const { ROLES, STATUS, CATEGORY, ALLOWED_STATUS_TRANSITIONS, OVERDUE_THRESHOLD_DAYS } = require('../utils/constants');
 const { sendStatusUpdateEmail } = require('./email.service');
 
 // ─── Private Helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Attaches the dynamic `isOverdue` flag to a complaint.
+ *
+ * A complaint is considered overdue if it is not resolved (not in STATUS.RESOLVED)
+ * and its createdAt date is older than OVERDUE_THRESHOLD_DAYS.
+ *
+ * @param {object} complaint
+ * @returns {object}
+ */
+function attachOverdueFlag(complaint) {
+  if (!complaint) return null;
+  const threshold = new Date(Date.now() - OVERDUE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000);
+  const isOverdue = complaint.status !== STATUS.RESOLVED && new Date(complaint.createdAt) < threshold;
+  return { ...complaint, isOverdue };
+}
 
 /**
  * Uploads a file buffer to Cloudinary using a writable stream.
@@ -142,7 +158,7 @@ async function listComplaints(filters, user) {
     },
   });
 
-  return complaints;
+  return complaints.map(attachOverdueFlag);
 }
 
 /**
@@ -196,7 +212,7 @@ async function getComplaintById(id, user) {
     throw new ApiError(403, 'You do not have permission to view this complaint');
   }
 
-  return complaint;
+  return attachOverdueFlag(complaint);
 }
 
 /**
@@ -277,13 +293,21 @@ async function updateComplaintStatus(id, data, admin) {
   return getComplaintById(id, admin);
 }
 
-/**
- * Returns the count of unresolved complaints older than OVERDUE_THRESHOLD_DAYS.
- * Applied at query time — no scheduler required.
- * Implemented in Phase 7 — Dashboard.
- */
 async function getOverdueCount(residentId) {
-  throw new Error('Not implemented');
+  const overdueThreshold = new Date(
+    Date.now() - OVERDUE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
+  );
+
+  const where = {
+    status: { not: STATUS.RESOLVED },
+    createdAt: { lt: overdueThreshold },
+  };
+
+  if (residentId) {
+    where.residentId = residentId;
+  }
+
+  return prisma.complaint.count({ where });
 }
 
 module.exports = {

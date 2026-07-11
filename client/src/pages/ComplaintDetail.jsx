@@ -133,6 +133,9 @@ export default function ComplaintDetail() {
       <div className="complaint-detail-meta">
         <StatusBadge status={complaint.status} />
         <PriorityBadge priority={complaint.priority} />
+        {complaint.isOverdue && (
+          <span className="badge badge-danger">Overdue</span>
+        )}
       </div>
 
       {/* 1. Info grid ──────────────────────────────────────────────────────── */}

@@ -42,11 +42,7 @@ const ALLOWED_STATUS_TRANSITIONS = Object.freeze({
   [STATUS.RESOLVED]: [],
 });
 
-/**
- * Number of days after which an unresolved complaint is considered overdue.
- * Applied at query time — no scheduler required.
- */
-const OVERDUE_THRESHOLD_DAYS = 7;
+const OVERDUE_THRESHOLD_DAYS = parseInt(process.env.OVERDUE_THRESHOLD_DAYS, 10) || 7;
 
 const BCRYPT_SALT_ROUNDS = 12;
 

@@ -126,6 +126,12 @@ export default function Dashboard() {
       {/* ── Admin View ───────────────────────────────────────────────────── */}
       {isAdmin && stats && (
         <>
+          {stats.overdueCount > 0 && (
+            <div className="alert alert-error" role="alert" style={{ marginBottom: 'var(--space-6)' }}>
+              <strong>Attention Required:</strong> There are <strong>{stats.overdueCount}</strong> unresolved complaints that have exceeded the overdue threshold.
+            </div>
+          )}
+
           {/* Overview — 5 summary cards */}
           <div className="dashboard-section">
             <p className="dashboard-section-title">Overview</p>

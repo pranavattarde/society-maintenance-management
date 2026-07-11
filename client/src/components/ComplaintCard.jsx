@@ -21,6 +21,9 @@ export default function ComplaintCard({ complaint }) {
         <div className="flex gap-2 flex-wrap">
           <StatusBadge status={complaint.status} />
           <PriorityBadge priority={complaint.priority} />
+          {complaint.isOverdue && (
+            <span className="badge badge-danger">Overdue</span>
+          )}
         </div>
         <span className="text-xs text-muted">{formatDate(complaint.createdAt)}</span>
       </div>
