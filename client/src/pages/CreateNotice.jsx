@@ -78,15 +78,24 @@ export default function CreateNotice() {
   return (
     <div className="page">
 
-      <Link to="/notices" className="notice-back-link">
-        ← Back to Notice Board
-      </Link>
-
-      <div className="page-header">
-        <h1>Post a Notice</h1>
+      <div className="back-navigation-container" style={{ marginBottom: 'var(--space-4)' }}>
+        <Link to="/notices" className="complaint-back-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to Notice Board
+        </Link>
       </div>
 
-      <div className="card">
+      <header className="page-header">
+        <div className="page-header-title">
+          <h1>Post a Notice</h1>
+          <p className="page-header-subtitle">Publish a new official announcement to the society bulletin board</p>
+        </div>
+      </header>
+
+      <div className="card create-notice-card">
         <form onSubmit={handleSubmit} noValidate>
 
           {apiError && (

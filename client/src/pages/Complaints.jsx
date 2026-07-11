@@ -7,16 +7,7 @@ import ComplaintCard from '../components/ComplaintCard';
 import './Complaints.css';
 
 /**
- * Complaints list page.
- *
- * Role behaviour:
- *   - Resident: sees only their own complaints; "New Complaint" button visible
- *   - Admin:    sees all complaints; date filter is available
- *
- * Filter behaviour:
- *   - All filter changes trigger a fresh API call via the useEffect dependency array
- *   - Invalid enum values are silently ignored by the backend
- *   - "Clear Filters" resets all filter state in one call
+ * Complaints board page redesign (V2)
  */
 export default function Complaints() {
   const { user, token } = useAuth();
@@ -32,9 +23,6 @@ export default function Complaints() {
   const [dateFilter, setDateFilter]         = useState('');
 
   const hasActiveFilters = Boolean(statusFilter || categoryFilter || dateFilter);
-
-  // ── Data fetching ──────────────────────────────────────────────────────────
-  // Defined inside the effect so it always closes over the latest filter values
 
   useEffect(() => {
     async function fetchComplaints() {
@@ -64,67 +52,74 @@ export default function Complaints() {
     setDateFilter('');
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
   return (
-    <div className="page">
+    <div className="page complaints-board">
 
-      {/* Page header */}
-      <div className="page-header">
-        <h1>Complaints</h1>
-        {!isAdmin && (
-          <Link to="/complaints/new" className="btn btn-primary">
-            + New Complaint
-          </Link>
-        )}
-      </div>
+      {/* Page Header */}
+      <header className="page-header">
+        <div className="page-header-title">
+          <h1>Complaints Queue</h1>
+          <p className="page-header-subtitle">Track, filter, and review maintenance activity backlog</p>
+        </div>
+        <div className="workspace-actions">
+          {!isAdmin && (
+            <Link to="/complaints/new" className="btn btn-primary">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: '6px' }}>
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              New Complaint
+            </Link>
+          )}
+        </div>
+      </header>
 
-      {/* Filter Bar -------------------------------------------------------- */}
+      {/* Inline Filters Toolbar */}
       <div className="complaints-filters">
-
-        <div className="complaints-filter-group">
-          <label className="complaints-filter-label">Status</label>
-          <select
-            className="form-select"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            aria-label="Filter by status"
-          >
-            <option value="">All Statuses</option>
-            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="complaints-filter-group">
-          <label className="complaints-filter-label">Category</label>
-          <select
-            className="form-select"
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            aria-label="Filter by category"
-          >
-            <option value="">All Categories</option>
-            {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Date filter — admin only */}
-        {isAdmin && (
+        <div className="filters-group-row">
           <div className="complaints-filter-group">
-            <label className="complaints-filter-label">Created From</label>
-            <input
-              type="date"
-              className="form-input"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              aria-label="Filter by date"
-            />
+            <label className="complaints-filter-label">Status</label>
+            <select
+              className="form-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              aria-label="Filter by status"
+            >
+              <option value="">All Statuses</option>
+              {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
           </div>
-        )}
+
+          <div className="complaints-filter-group">
+            <label className="complaints-filter-label">Category</label>
+            <select
+              className="form-select"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              aria-label="Filter by category"
+            >
+              <option value="">All Categories</option>
+              {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+
+          {isAdmin && (
+            <div className="complaints-filter-group">
+              <label className="complaints-filter-label">Created From</label>
+              <input
+                type="date"
+                className="form-input"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                aria-label="Filter by creation date"
+              />
+            </div>
+          )}
+        </div>
 
         {hasActiveFilters && (
           <button
@@ -134,14 +129,17 @@ export default function Complaints() {
             Clear Filters
           </button>
         )}
-
       </div>
 
-      {/* Body -------------------------------------------------------------- */}
+      <div className="complaints-count">
+        Showing {complaints.length} complaint{complaints.length !== 1 ? 's' : ''}
+      </div>
+
+      {/* Main Backlog Output */}
       {loading ? (
         <div className="empty-state">
-          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
-          <p>Loading complaints…</p>
+          <div className="spinner" aria-hidden="true"></div>
+          <p>Filtering backlog…</p>
         </div>
 
       ) : error ? (
@@ -149,34 +147,35 @@ export default function Complaints() {
 
       ) : complaints.length === 0 ? (
         <div className="empty-state">
-          <h3 className="empty-state-title">
-            {hasActiveFilters ? 'No matches found' : 'No complaints yet'}
-          </h3>
-          <p className="empty-state-body">
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: 'var(--color-gray-400)', marginBottom: 'var(--space-2)' }}>
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <h3>No records found</h3>
+          <p>
             {hasActiveFilters
-              ? 'No complaints match your current filters.'
+              ? 'Try widening your filter selectors to expand search scope.'
               : isAdmin
-              ? 'No complaints have been submitted yet.'
-              : 'Submit your first complaint using the button above.'}
+              ? 'All caught up! No operational records are logged.'
+              : 'You have not filed any maintenance complaints yet.'}
           </p>
           {hasActiveFilters && (
-            <button onClick={clearFilters} className="btn btn-secondary">
-              Clear Filters
+            <button
+              onClick={clearFilters}
+              className="btn btn-secondary btn-sm"
+              style={{ marginTop: 'var(--space-4)' }}
+            >
+              Clear Filter Selections
             </button>
           )}
         </div>
 
       ) : (
-        <>
-          <p className="complaints-count">
-            {complaints.length} {complaints.length === 1 ? 'complaint' : 'complaints'} found
-          </p>
-          <div className="complaints-grid">
-            {complaints.map((complaint) => (
-              <ComplaintCard key={complaint.id} complaint={complaint} />
-            ))}
-          </div>
-        </>
+        <div className="complaints-list-container">
+          {complaints.map((complaint) => (
+            <ComplaintCard key={complaint.id} complaint={complaint} />
+          ))}
+        </div>
       )}
 
     </div>

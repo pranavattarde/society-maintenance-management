@@ -1,149 +1,178 @@
 /* ============================================================
-   ComplaintDetail Page Styles
+   Version 2 Complaint Detail Workspace Styles (70/30 Layout)
    ============================================================ */
 
-/* ── Back navigation link ────────────────────────────────────────────────── */
+.complaint-detail-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.back-navigation-container {
+  padding-left: var(--space-1);
+  margin-bottom: calc(-1 * var(--space-3));
+}
 
 .complaint-back-link {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-gray-600);
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  font-weight: 600;
   text-decoration: none;
-  margin-bottom: var(--space-6);
-  transition: color 0.15s;
+  transition: all 0.15s ease;
 }
 
 .complaint-back-link:hover {
-  color: var(--color-primary);
-  text-decoration: none;
+  color: var(--color-gray-900);
 }
 
-/* ── Badges row ──────────────────────────────────────────────────────────── */
+.complaint-back-link svg {
+  transition: transform 0.15s ease;
+}
 
-.complaint-detail-meta {
+.complaint-back-link:hover svg {
+  transform: translateX(-2px);
+}
+
+.complaint-id-mono {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.complaint-detail-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: 1.6;
+}
+
+/* ── Workspace 70/30 Split Layout ────────────────────────────────────────── */
+
+.complaint-detail-layout {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-6);
+  align-items: flex-start;
+  width: 100%;
+}
+
+.complaint-detail-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.complaint-detail-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Photo Upload Box Frame */
+.photo-gallery-frame {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
+  background-color: var(--color-gray-50);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  box-shadow: inset 0 2px 4px 0 rgba(15, 23, 42, 0.02);
 }
 
-/* ── Info grid — category / dates / resident ─────────────────────────────── */
-
-.complaint-detail-info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--space-5);
+.complaint-detail-photo {
+  max-width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  display: block;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-200);
 }
 
-.complaint-detail-info-item {
+/* Metadata Attributes List style */
+.metadata-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-.complaint-detail-info-label {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.complaint-detail-info-value {
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-800);
-  font-weight: 500;
-}
-
-/* ── Section cards ───────────────────────────────────────────────────────── */
-
-.complaint-detail-section {
-  margin-bottom: var(--space-4);
-}
-
-.complaint-detail-section-title {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-3);
-}
-
-.complaint-detail-text {
-  font-size: var(--font-size-base);
-  color: var(--color-gray-700);
-  line-height: 1.75;
-  white-space: pre-wrap;
-  margin: 0;
-}
-
-/* ── Attached photo ──────────────────────────────────────────────────────── */
-
-.complaint-detail-photo {
-  width: 100%;
-  max-height: 520px;
-  object-fit: cover;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-gray-200);
-  background: var(--color-gray-50);
-  display: block;
-  box-shadow: var(--shadow-sm);
-}
-
-/* ── Admin Status Update Form ─────────────────────────────────────────────── */
-
-.complaint-update-form {
+.metadata-item {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 3px;
+  padding: var(--space-2.5) 0;
+  border-bottom: 1px dashed var(--color-gray-150);
 }
 
-.complaint-update-actions {
-  display: flex;
-  justify-content: flex-end;
+.metadata-item:last-child {
+  border-bottom: none;
 }
 
-/* ── Status History Timeline ──────────────────────────────────────────────── */
+.metadata-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
+.metadata-value {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+/* Status logs timeline */
 .complaint-history-timeline {
   display: flex;
   flex-direction: column;
+  padding-left: var(--space-2);
 }
 
 .complaint-history-item {
   display: flex;
-  gap: var(--space-5);
+  gap: var(--space-4);
   position: relative;
   padding-bottom: var(--space-6);
 }
 
-/* Vertical connector between dots */
 .complaint-history-item:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: 7px;
-  top: 18px;
+  left: 3px;
+  top: 10px;
   bottom: 0;
-  width: 2px;
+  width: 1px;
   background: var(--color-gray-200);
 }
 
 .complaint-history-dot {
-  width: 16px;
-  height: 16px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: white;
-  border: 3px solid var(--color-primary);
-  box-shadow: 0 0 0 4px var(--color-primary-light);
+  background: var(--color-gray-300);
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: 6px;
   position: relative;
   z-index: 1;
+}
+
+.complaint-history-item:first-child .complaint-history-dot {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
 .complaint-history-content {
@@ -153,40 +182,49 @@
   gap: var(--space-1.5);
 }
 
-/* Previous status → New status badges */
 .complaint-history-transition {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-2.5);
   flex-wrap: wrap;
 }
 
-.complaint-history-arrow {
+.complaint-history-arrow-svg {
   color: var(--color-gray-400);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
+  flex-shrink: 0;
 }
 
-/* "Admin Name · 09 Jul 2026, 08:30 PM" */
 .complaint-history-meta {
-  font-size: var(--font-size-xs);
-  color: var(--color-gray-500);
+  font-size: 11px;
+  color: var(--color-gray-400);
+  font-weight: 500;
 }
 
-/* Optional remark block — left border accent */
 .complaint-history-note {
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-700);
-  background: var(--color-gray-50);
-  border-left: 4px solid var(--color-primary);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  margin-top: var(--space-2);
-  white-space: pre-wrap;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-600);
+  border-left: 2px solid var(--color-accent);
+  padding: var(--space-1) var(--space-3);
+  margin: 0;
+  background-color: var(--color-gray-50);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  line-height: 1.5;
 }
 
-/* Last item has no bottom padding */
 .complaint-history-item:last-child {
   padding-bottom: 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .complaint-detail-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .complaint-detail-sidebar {
+    width: 100%;
+    order: -1; /* Display properties/transitions first on smaller screens */
+  }
 }

@@ -1,102 +1,347 @@
-.navbar {
-  height: var(--navbar-height);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--color-gray-200);
+/* ============================================================
+   App Navigation Styles (Sidebar & Mobile Tab Bar)
+   ============================================================ */
+
+/* ── Desktop Sidebar (Default) ───────────────────────────────────────────── */
+
+.app-navigation {
+  width: 240px;
+  height: 100vh;
+  background-color: white;
+  border-right: 1px solid var(--color-gray-200);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--space-6);
+  flex-direction: column;
+  padding: var(--space-6) var(--space-4);
   position: sticky;
   top: 0;
+  flex-shrink: 0;
   z-index: 100;
-  box-shadow: var(--shadow-sm);
 }
 
-.navbar-brand {
+/* Brand Logo Header */
+.nav-brand {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  padding: 0 var(--space-2);
+  margin-bottom: var(--space-8);
   font-weight: 700;
-  font-size: var(--font-size-base);
+  font-size: 15px;
   color: var(--color-gray-900);
-  text-decoration: none;
+  letter-spacing: -0.03em;
+}
+
+.nav-logo-svg {
+  color: var(--color-accent);
   flex-shrink: 0;
-  letter-spacing: -0.015em;
 }
 
-.navbar-logo {
-  font-size: 1.5rem;
-  line-height: 1;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.nav-brand-text {
+  letter-spacing: -0.02em;
 }
 
-.navbar-brand:hover .navbar-logo {
-  transform: scale(1.15) rotate(5deg);
+/* Nav Menu & Links */
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
 }
 
-.navbar-links {
+.nav-link {
   display: flex;
   align-items: center;
-  gap: var(--space-1.5);
-}
-
-.navbar-link {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  gap: var(--space-3);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-gray-600);
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  transition: all 0.15s ease;
+  position: relative;
 }
 
-.navbar-link:hover {
+.nav-link:hover {
   background-color: var(--color-gray-100);
   color: var(--color-gray-900);
-  text-decoration: none;
 }
 
-.navbar-link.active {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+.nav-link.active {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent-dark);
 }
 
-.navbar-user {
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  background-color: var(--color-accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-icon {
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.nav-link:hover .nav-icon {
+  color: var(--color-gray-900);
+}
+
+.nav-link.active .nav-icon {
+  color: var(--color-accent);
+}
+
+/* User Profile Footer */
+.nav-user {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-gray-100);
+  margin-top: var(--space-4);
+}
+
+.nav-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.nav-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--color-gray-200);
+}
+
+.nav-user-profile {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.nav-user-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-user-flat {
+  font-size: 10px;
+  color: var(--color-gray-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-user-role {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.nav-logout-btn {
+  background: transparent;
+  border: none;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-gray-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
   flex-shrink: 0;
 }
 
-.navbar-user-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  line-height: 1.2;
+.nav-logout-btn:hover {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
-.navbar-user-name {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-gray-700);
+/* ── Tablet Sidebar Rail (769px - 1024px) ─────────────────────────────────── */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .app-navigation {
+    width: 72px;
+    padding: var(--space-6) var(--space-2);
+    align-items: center;
+  }
+
+  .nav-brand {
+    justify-content: center;
+    padding: 0;
+    margin-bottom: var(--space-8);
+  }
+
+  .nav-brand-text {
+    display: none;
+  }
+
+  .nav-menu {
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+  }
+
+  .nav-link.active::after {
+    display: none;
+  }
+
+  .nav-label {
+    display: none;
+  }
+
+  .nav-user {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: var(--space-3);
+  }
+
+  .nav-user-info {
+    justify-content: center;
+  }
+
+  .nav-user-profile {
+    display: none;
+  }
+
+  .nav-logout-btn {
+    padding: var(--space-2);
+  }
 }
+
+/* ── Mobile Layout (max-width: 768px) ─────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  .navbar-title {
-    display: none;
+  .app-navigation {
+    display: contents;
   }
 
-  .navbar-user-info {
-    display: none;
+  /* Top Bar (Brand logo + logout) */
+  .nav-brand {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background-color: white;
+    border-bottom: 1px solid var(--color-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    margin: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
   }
 
-  .navbar-links {
+  .nav-brand-text {
+    font-size: var(--font-size-sm);
+  }
+
+  /* Reposition Logout to top bar */
+  .nav-user {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 56px;
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-right: var(--space-4);
+    z-index: 101;
+  }
+
+  .nav-user-info {
+    display: none; /* Hide profile avatar and details on mobile top bar */
+  }
+
+  .nav-logout-btn {
+    background-color: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    padding: 6px;
+  }
+
+  /* Bottom Tab Bar for Menu Links */
+  .nav-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background-color: white;
+    border-top: 1px solid var(--color-gray-200);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 var(--space-2);
+    margin: 0;
+    z-index: 100;
+    box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.03);
     gap: 0;
   }
 
-  .navbar-link {
-    padding: var(--space-2);
+  .nav-link {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 4px 0;
+    font-size: 10px;
+    height: 100%;
+    border-radius: 0;
+    background: transparent !important;
+  }
+
+  .nav-link.active {
+    color: var(--color-accent);
+  }
+
+  .nav-link.active::after {
+    display: none;
+  }
+
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .nav-label {
+    display: block;
+    font-weight: 500;
   }
 }

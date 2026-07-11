@@ -1,61 +1,94 @@
 /* ============================================================
-   Complaints List Page Styles
+   Version 2 Complaints Page Styles
    ============================================================ */
 
-/* ── Filter Bar ──────────────────────────────────────────────────────────── */
+.complaints-board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ── Inline Filters Toolbar ─────────────────────────────────────────────── */
 
 .complaints-filters {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-4);
   flex-wrap: wrap;
-  padding: var(--space-5);
+  padding: var(--space-4) var(--space-5);
   background: white;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-gray-200);
   box-shadow: var(--shadow-sm);
-  margin-bottom: var(--space-8);
+}
+
+.filters-group-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
 }
 
 .complaints-filter-group {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  flex: 1;
-  min-width: 160px;
+  align-items: center;
+  gap: var(--space-2.5);
 }
 
 .complaints-filter-label {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--color-gray-500);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gray-400);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
-/* Clear button sits at the end of the filter row */
+.complaints-filters .form-select,
+.complaints-filters .form-input {
+  border: 1px solid var(--color-gray-200);
+  padding: 6px 12px;
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-700);
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-sm);
+  width: auto;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.complaints-filters .form-select:focus,
+.complaints-filters .form-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+  background-color: white;
+}
+
 .complaints-filter-clear {
   flex-shrink: 0;
-  align-self: flex-end;
-  height: 38px; /* Matches height of select/input */
+  font-weight: 600;
 }
-
-/* ── Results count ───────────────────────────────────────────────────────── */
 
 .complaints-count {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-size: var(--font-size-xs);
   color: var(--color-gray-500);
-  margin-bottom: var(--space-4);
+  font-weight: 500;
+  padding-left: var(--space-1);
+  margin-bottom: calc(-1 * var(--space-2));
 }
 
-/* ── Responsive two-column grid ──────────────────────────────────────────── */
+/* ── High-Density Issues Queue Stack ─────────────────────────────────────── */
 
-.complaints-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-6);
-  align-items: start; /* each card takes its own height */
+.complaints-list-container {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
@@ -65,19 +98,26 @@
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-4);
+    padding: var(--space-4);
+  }
+
+  .filters-group-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
   }
 
   .complaints-filter-group {
-    min-width: unset;
+    justify-content: space-between;
+    gap: var(--space-2);
   }
 
   .complaints-filter-clear {
-    align-self: flex-start;
-    height: auto;
+    width: 100%;
   }
 
-  .complaints-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
+  .complaints-filters .form-select,
+  .complaints-filters .form-input {
+    width: 65%;
   }
 }

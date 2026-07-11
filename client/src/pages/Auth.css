@@ -1,64 +1,76 @@
 /* ============================================================
-   Auth Pages — Shared Styles
-   Used by Login.jsx and Register.jsx
+   Version 2 Auth Pages Styles
    ============================================================ */
 
-/* ── Page Shell ──────────────────────────────────────────────────────────── */
+/* ── Page Container ──────────────────────────────────────────────────────── */
 
 .auth-page {
   min-height: 100vh;
+  width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.08) 0%, transparent 40%),
-              radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 45%),
-              var(--color-gray-50);
-  padding: var(--space-4);
+  background-color: var(--color-gray-50);
+  padding: var(--space-6);
 }
 
-/* ── Card ────────────────────────────────────────────────────────────────── */
+/* ── Form Card container ─────────────────────────────────────────────────── */
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   background: white;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-xl);
-  /* Soft indigo-tinted shadow — professional, not harsh */
-  box-shadow:
-    0 24px 64px -12px rgba(79, 70, 229, 0.12),
-    0 8px 24px -8px rgba(15, 23, 42, 0.04);
-  padding: var(--space-10) var(--space-8);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-8);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* ── Header ──────────────────────────────────────────────────────────────── */
+.auth-card:hover {
+  border-color: var(--color-gray-300);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Typographic Logo Mark ────────────────────────────────────────────────── */
 
 .auth-header {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
 }
 
-.auth-logo {
-  font-size: 2.5rem;
-  line-height: 1;
-  margin-bottom: var(--space-4);
-  display: block;
+.auth-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+  margin-bottom: var(--space-2);
+  border: 1px solid rgba(2, 132, 199, 0.15);
 }
 
 .auth-title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-gray-900);
-  margin-bottom: var(--space-2);
+  margin-bottom: 2px;
+  letter-spacing: -0.03em;
 }
 
 .auth-subtitle {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-gray-500);
   margin: 0;
 }
 
-/* ── Form ────────────────────────────────────────────────────────────────── */
+/* ── Inputs & Fields ─────────────────────────────────────────────────────── */
 
 .auth-form {
   display: flex;
@@ -66,89 +78,93 @@
   gap: var(--space-4);
 }
 
-/* ── Password field with Show / Hide toggle ──────────────────────────────── */
-
 .password-wrapper {
   position: relative;
 }
 
 .password-wrapper .form-input {
-  padding-right: 4.5rem;
+  padding-right: 3.5rem;
 }
 
 .password-toggle {
   position: absolute;
-  right: var(--space-3);
+  right: var(--space-2);
   top: 50%;
   transform: translateY(-50%);
-  background: none;
+  background: transparent;
   border: none;
-  color: var(--color-primary);
-  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+  font-size: 11px;
   font-weight: 600;
   font-family: var(--font-family);
-  letter-spacing: 0.02em;
   cursor: pointer;
-  padding: var(--space-1) var(--space-2);
+  padding: 4px var(--space-2);
   border-radius: var(--radius-sm);
   line-height: 1;
-  transition: color 0.15s;
+  transition: all 0.15s ease;
+  user-select: none;
 }
 
 .password-toggle:hover {
-  color: var(--color-primary-dark);
+  color: var(--color-gray-900);
+  background-color: var(--color-gray-50);
 }
 
-/* ── API Error Alert ─────────────────────────────────────────────────────── */
-
+/* API Error banner custom override */
 .auth-api-error {
   padding: var(--space-3) var(--space-4);
   background: var(--color-danger-light);
-  border: 1px solid #fca5a5;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-danger);
-  line-height: 1.5;
+  line-height: 1.4;
+  font-weight: 500;
 }
-
-/* ── Submit Button ───────────────────────────────────────────────────────── */
 
 .auth-submit {
   width: 100%;
-  padding: var(--space-3);
-  font-size: var(--font-size-base);
   margin-top: var(--space-2);
 }
 
-/* ── Divider + Footer ────────────────────────────────────────────────────── */
-
+/* Footer layout */
 .auth-divider {
   border: none;
-  border-top: 1px solid var(--color-gray-100);
-  margin: var(--space-6) 0 0;
+  border-top: 1px solid var(--color-gray-200);
+  margin: var(--space-6) 0 0 0;
 }
 
 .auth-footer {
   text-align: center;
-  margin-top: var(--space-4);
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-600);
+  margin-top: var(--space-5);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
 }
 
 .auth-footer a {
-  color: var(--color-primary);
-  font-weight: 500;
+  color: var(--color-accent);
+  font-weight: 600;
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 .auth-footer a:hover {
   text-decoration: underline;
+  color: var(--color-accent-dark);
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* ── Mobile viewport overrides ────────────────────────────────────────────── */
 
 @media (max-width: 480px) {
+  .auth-page {
+    padding: var(--space-4);
+    background-color: white;
+  }
+  
   .auth-card {
-    padding: var(--space-8) var(--space-5);
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    background: transparent;
   }
 }

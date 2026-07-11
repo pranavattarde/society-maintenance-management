@@ -8,19 +8,7 @@ import { formatDateTime } from '../utils/helpers';
 import './ComplaintDetail.css';
 
 /**
- * ComplaintDetail page.
- *
- * Sections (in order):
- *   1. Info grid — category, resident, submitted/updated dates
- *   2. Description
- *   3. Attached photo (if any)
- *   4. Update Status form (admin only, hidden once RESOLVED)
- *   5. Status History timeline (both roles, rendered only when history exists)
- *
- * Re-fetch strategy:
- *   A `refetchTrigger` counter is incremented after a successful status update.
- *   The useEffect depends on it, so it re-runs and fetches fresh data including
- *   the new history entry — without duplicating the fetch function.
+ * ComplaintDetail page redesign (V2) - 70/30 workspace layout
  */
 export default function ComplaintDetail() {
   const { id }    = useParams();
@@ -39,8 +27,6 @@ export default function ComplaintDetail() {
   const [updateError, setUpdateError] = useState('');
   const [updating, setUpdating]     = useState(false);
 
-  // ── Data fetching ──────────────────────────────────────────────────────────
-
   useEffect(() => {
     async function fetchComplaint() {
       setLoading(true);
@@ -48,7 +34,7 @@ export default function ComplaintDetail() {
       try {
         const data = await complaintsApi.getById(id, token);
         setComplaint(data.complaint);
-        // Reset the update form whenever fresh data arrives
+        // Reset inputs on fresh load
         setNewStatus('');
         setRemark('');
         setUpdateError('');
@@ -62,8 +48,6 @@ export default function ComplaintDetail() {
     fetchComplaint();
   }, [id, token, refetchTrigger]);
 
-  // ── Status update handler ──────────────────────────────────────────────────
-
   async function handleStatusUpdate(e) {
     e.preventDefault();
     if (!newStatus) return;
@@ -76,7 +60,7 @@ export default function ComplaintDetail() {
         { status: newStatus, remark: remark.trim() || null },
         token
       );
-      setRefetchTrigger((t) => t + 1); // triggers re-fetch with updated history
+      setRefetchTrigger((t) => t + 1); // trigger local refresh
     } catch (err) {
       setUpdateError(err.message || 'Failed to update status');
     } finally {
@@ -91,7 +75,7 @@ export default function ComplaintDetail() {
       <div className="page">
         <div className="empty-state">
           <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
-          <p>Loading complaint…</p>
+          <p>Analyzing ticket detail…</p>
         </div>
       </div>
     );
@@ -102,198 +86,202 @@ export default function ComplaintDetail() {
   if (error) {
     return (
       <div className="page">
-        <Link to="/complaints" className="complaint-back-link">
-          ← Back to Complaints
-        </Link>
         <div className="alert alert-error" role="alert">{error}</div>
       </div>
     );
   }
 
-  // ── Computed values ────────────────────────────────────────────────────────
-
   const allowedTransitions = ALLOWED_STATUS_TRANSITIONS[complaint.status] || [];
   const canUpdateStatus    = isAdmin && allowedTransitions.length > 0;
 
-  // ── Detail view ────────────────────────────────────────────────────────────
-
   return (
-    <div className="page">
+    <div className="page complaint-detail-workspace">
 
       {/* Back navigation */}
-      <Link to="/complaints" className="complaint-back-link">
-        ← Back to Complaints
-      </Link>
-
-      {/* Title */}
-      <div className="page-header">
-        <h1>{complaint.title}</h1>
+      <div className="back-navigation-container">
+        <Link to="/complaints" className="complaint-back-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to Complaints list
+        </Link>
       </div>
 
-      {/* Status + Priority badges */}
-      <div className="complaint-detail-meta">
-        <StatusBadge status={complaint.status} />
-        <PriorityBadge priority={complaint.priority} />
-        {complaint.isOverdue && (
-          <span className="badge badge-danger">Overdue</span>
-        )}
-      </div>
+      {/* Header section with statuses and ID */}
+      <header className="page-header">
+        <div className="page-header-title">
+          <div className="flex gap-2 items-center flex-wrap" style={{ marginBottom: 'var(--space-2)' }}>
+            <span className="complaint-id-mono">#{complaint.id.slice(-6)}</span>
+            <StatusBadge status={complaint.status} />
+            <PriorityBadge priority={complaint.priority} />
+            {complaint.isOverdue && (
+              <span className="badge badge-danger">Overdue</span>
+            )}
+          </div>
+          <h1>{complaint.title}</h1>
+        </div>
+      </header>
 
-      {/* 1. Info grid ──────────────────────────────────────────────────────── */}
-      <div className="card complaint-detail-section">
-        <div className="complaint-detail-info-grid">
+      {/* ── Main 70/30 Split Layout ── */}
+      <div className="complaint-detail-layout">
+        
+        {/* Left Side (70%) - Description, Photo, History Timeline */}
+        <main className="complaint-detail-main">
+          
+          {/* Description */}
+          <section className="workspace-panel">
+            <h2 className="panel-title">Description</h2>
+            <p className="complaint-detail-text">{complaint.description}</p>
+          </section>
 
-          <div className="complaint-detail-info-item">
-            <span className="complaint-detail-info-label">Category</span>
-            <span className="complaint-detail-info-value">
-              {CATEGORY_LABELS[complaint.category] || complaint.category}
-            </span>
+          {/* Attached image file */}
+          {complaint.photoUrl && (
+            <section className="workspace-panel">
+              <h2 className="panel-title">Attached Evidence</h2>
+              <div className="photo-gallery-frame">
+                <img
+                  src={complaint.photoUrl}
+                  alt={`Proof artifact for complaint #${complaint.id.slice(-6)}`}
+                  className="complaint-detail-photo"
+                />
+              </div>
+            </section>
+          )}
+
+          {/* Timeline audit trail */}
+          {complaint.history && complaint.history.length > 0 && (
+            <section className="workspace-panel">
+              <h2 className="panel-title">Lifecycle History Logs</h2>
+              <div className="complaint-history-timeline">
+                {complaint.history.map((entry) => (
+                  <div key={entry.id} className="complaint-history-item">
+                    <div className="complaint-history-dot" aria-hidden="true" />
+                    <div className="complaint-history-content">
+                      <div className="complaint-history-transition">
+                        <StatusBadge status={entry.fromStatus} />
+                        <svg className="complaint-history-arrow-svg" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                          <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                        <StatusBadge status={entry.toStatus} />
+                      </div>
+                      <span className="complaint-history-meta">
+                        Changed by <strong>{entry.changedBy.name}</strong> · {formatDateTime(entry.createdAt)}
+                      </span>
+                      {entry.remark && (
+                        <blockquote className="complaint-history-note">{entry.remark}</blockquote>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+        </main>
+
+        {/* Right Side (30%) - Metadata Panel, Actions Panel */}
+        <aside className="complaint-detail-sidebar">
+          
+          {/* Properties Panel */}
+          <div className="workspace-panel">
+            <h2 className="panel-title">Ticket Properties</h2>
+            
+            <div className="metadata-list">
+              <div className="metadata-item">
+                <span className="metadata-label">Category</span>
+                <span className="metadata-value">
+                  {CATEGORY_LABELS[complaint.category] || complaint.category}
+                </span>
+              </div>
+              {complaint.resident && (
+                <div className="metadata-item">
+                  <span className="metadata-label">Reporter</span>
+                  <span className="metadata-value">
+                    {complaint.resident.name} (Flat {complaint.resident.flatNumber})
+                  </span>
+                </div>
+              )}
+              <div className="metadata-item">
+                <span className="metadata-label">Logged</span>
+                <span className="metadata-value">
+                  {formatDateTime(complaint.createdAt)}
+                </span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Modified</span>
+                <span className="metadata-value">
+                  {formatDateTime(complaint.updatedAt)}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {complaint.resident && (
-            <div className="complaint-detail-info-item">
-              <span className="complaint-detail-info-label">Submitted By</span>
-              <span className="complaint-detail-info-value">
-                {complaint.resident.name} · Flat {complaint.resident.flatNumber}
-              </span>
+          {/* Admin status state machine transition */}
+          {canUpdateStatus && (
+            <div className="workspace-panel">
+              <h2 className="panel-title">State Transitions</h2>
+              
+              <form
+                onSubmit={handleStatusUpdate}
+                className="complaint-update-form"
+                noValidate
+              >
+                {updateError && (
+                  <div className="alert alert-error" role="alert" style={{ fontSize: '11px', padding: 'var(--space-2)' }}>
+                    {updateError}
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label htmlFor="new-status" className="form-label">
+                    Next State Transition
+                  </label>
+                  <select
+                    id="new-status"
+                    className="form-select"
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    disabled={updating}
+                  >
+                    <option value="">— Select state —</option>
+                    {allowedTransitions.map((s) => (
+                      <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="remark" className="form-label">
+                    Activity Comment <span className="text-muted">(optional)</span>
+                  </label>
+                  <textarea
+                    id="remark"
+                    className="form-textarea"
+                    value={remark}
+                    onChange={(e) => setRemark(e.target.value)}
+                    placeholder="Enter audit trailing comments…"
+                    rows={3}
+                    disabled={updating}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  id="update-status-submit"
+                  className="btn btn-primary btn-lg"
+                  disabled={updating || !newStatus}
+                >
+                  {updating ? 'Updating…' : 'Apply state change'}
+                </button>
+              </form>
             </div>
           )}
 
-          <div className="complaint-detail-info-item">
-            <span className="complaint-detail-info-label">Submitted</span>
-            <span className="complaint-detail-info-value">
-              {formatDateTime(complaint.createdAt)}
-            </span>
-          </div>
+        </aside>
 
-          <div className="complaint-detail-info-item">
-            <span className="complaint-detail-info-label">Last Updated</span>
-            <span className="complaint-detail-info-value">
-              {formatDateTime(complaint.updatedAt)}
-            </span>
-          </div>
-
-        </div>
       </div>
-
-      {/* 2. Description ────────────────────────────────────────────────────── */}
-      <div className="card complaint-detail-section">
-        <h2 className="complaint-detail-section-title">Description</h2>
-        <p className="complaint-detail-text">{complaint.description}</p>
-      </div>
-
-      {/* 3. Attached photo ─────────────────────────────────────────────────── */}
-      {complaint.photoUrl && (
-        <div className="card complaint-detail-section">
-          <h2 className="complaint-detail-section-title">Attached Photo</h2>
-          <img
-            src={complaint.photoUrl}
-            alt={`Photo for: ${complaint.title}`}
-            className="complaint-detail-photo"
-          />
-        </div>
-      )}
-
-      {/* 4. Admin: Update Status form ──────────────────────────────────────── */}
-      {canUpdateStatus && (
-        <div className="card complaint-detail-section">
-          <h2 className="complaint-detail-section-title">Update Status</h2>
-
-          <form
-            onSubmit={handleStatusUpdate}
-            className="complaint-update-form"
-            noValidate
-          >
-            {updateError && (
-              <div className="alert alert-error" role="alert">
-                {updateError}
-              </div>
-            )}
-
-            {/* Status select — only shows valid next states */}
-            <div className="form-group">
-              <label htmlFor="new-status" className="form-label">
-                New Status
-              </label>
-              <select
-                id="new-status"
-                className="form-select"
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value)}
-                disabled={updating}
-              >
-                <option value="">— Select new status —</option>
-                {allowedTransitions.map((s) => (
-                  <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Optional remark */}
-            <div className="form-group">
-              <label htmlFor="remark" className="form-label">
-                Remark{' '}
-                <span className="text-muted text-xs">(optional)</span>
-              </label>
-              <textarea
-                id="remark"
-                className="form-textarea"
-                value={remark}
-                onChange={(e) => setRemark(e.target.value)}
-                placeholder="Add a note about this status change…"
-                rows={3}
-                disabled={updating}
-              />
-            </div>
-
-            <div className="complaint-update-actions">
-              <button
-                type="submit"
-                id="update-status-submit"
-                className="btn btn-primary"
-                disabled={updating || !newStatus}
-              >
-                {updating ? 'Updating…' : 'Update Status'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* 5. Status History timeline (both roles) ───────────────────────────── */}
-      {complaint.history && complaint.history.length > 0 && (
-        <div className="card complaint-detail-section">
-          <h2 className="complaint-detail-section-title">Status History</h2>
-
-          <div className="complaint-history-timeline">
-            {complaint.history.map((entry) => (
-              <div key={entry.id} className="complaint-history-item">
-                <div className="complaint-history-dot" aria-hidden="true" />
-                <div className="complaint-history-content">
-
-                  {/* fromStatus → toStatus */}
-                  <div className="complaint-history-transition">
-                    <StatusBadge status={entry.fromStatus} />
-                    <span className="complaint-history-arrow">→</span>
-                    <StatusBadge status={entry.toStatus} />
-                  </div>
-
-                  {/* Who changed it and when */}
-                  <span className="complaint-history-meta">
-                    {entry.changedBy.name} · {formatDateTime(entry.createdAt)}
-                  </span>
-
-                  {/* Optional remark */}
-                  {entry.remark && (
-                    <p className="complaint-history-note">{entry.remark}</p>
-                  )}
-
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
     </div>
   );

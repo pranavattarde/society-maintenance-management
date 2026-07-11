@@ -149,21 +149,25 @@ export default function CreateComplaint() {
     return (
       <div className="page">
         <div className="card complaint-success">
-          <span className="complaint-success-icon" aria-hidden="true">✅</span>
+          <div className="complaint-success-icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
           <h1 className="complaint-success-title">Complaint Submitted!</h1>
           <p className="complaint-success-ref">
-            Reference: <code>{submitted.id}</code>
+            Reference ID: <code>{submitted.id}</code>
           </p>
           <p className="complaint-success-message">
-            Your complaint has been logged. The admin team will review it and update you
-            on the status.
+            Your maintenance assistance ticket has been successfully logged. The admin team will review it and coordinate the resolution timeline.
           </p>
           <div className="complaint-success-actions">
             <button onClick={resetForm} className="btn btn-secondary">
-              Submit Another
+              Submit Another Ticket
             </button>
             <Link to="/dashboard" className="btn btn-primary">
-              Go to Dashboard
+              Return to Dashboard
             </Link>
           </div>
         </div>
@@ -174,13 +178,26 @@ export default function CreateComplaint() {
   // ── Form ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="page">
+    <div className="page create-complaint-page">
 
-      <div className="page-header">
-        <h1>Submit a Complaint</h1>
+      <div className="back-navigation-container" style={{ marginBottom: 'var(--space-4)' }}>
+        <Link to="/complaints" className="complaint-back-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to Complaints list
+        </Link>
       </div>
 
-      <div className="card">
+      <header className="page-header">
+        <div className="page-header-title">
+          <h1>Submit a Complaint</h1>
+          <p className="page-header-subtitle">Initiate a new maintenance assistance ticket for your residence unit</p>
+        </div>
+      </header>
+
+      <div className="card create-complaint-card">
         <form onSubmit={handleSubmit} noValidate>
 
           {/* API Error Banner -------------------------------------------- */}
@@ -222,7 +239,7 @@ export default function CreateComplaint() {
               className={`form-textarea${fieldErrors.description ? ' is-error' : ''}`}
               value={form.description}
               onChange={handleChange}
-              placeholder="Describe the issue in detail — location, when it started, how severe it is..."
+              placeholder="Describe the issue in detail — location, when it started, severity..."
               rows={5}
               disabled={submitting}
             />
@@ -280,18 +297,17 @@ export default function CreateComplaint() {
           </div>
 
           {/* Photo Upload ------------------------------------------------- */}
-          <div className="form-group">
+          <div className="form-group" style={{ marginTop: 'var(--space-2)' }}>
             <label className="form-label">
-              Photo{' '}
-              <span className="text-muted text-xs">
-                (optional · JPEG, PNG, WebP · max 5 MB)
-              </span>
+              Photo Attachment <span className="text-muted text-xs">(optional · JPEG, PNG, WebP · max 5 MB)</span>
             </label>
 
             {!photo ? (
               <label htmlFor="complaint-photo" className="file-upload-label">
-                <span aria-hidden="true">📎</span>
-                <span>Choose photo</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: '6px' }}>
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+                <span>Select file attachment</span>
                 <input
                   key={fileInputKey}
                   id="complaint-photo"
@@ -304,12 +320,19 @@ export default function CreateComplaint() {
               </label>
             ) : (
               <div className="file-selected">
-                <span className="file-selected-name" title={photo.name}>
-                  📷 {photo.name}
-                </span>
-                <span className="file-selected-size">
-                  ({(photo.size / 1024).toFixed(0)} KB)
-                </span>
+                <div className="flex items-center gap-2 min-width: 0" style={{ flex: 1 }}>
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: 'var(--color-success)', flexShrink: 0 }}>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  <span className="file-selected-name" title={photo.name}>
+                    {photo.name}
+                  </span>
+                  <span className="file-selected-size">
+                    ({(photo.size / 1024).toFixed(0)} KB)
+                  </span>
+                </div>
                 <button
                   type="button"
                   className="file-clear-btn"
@@ -338,7 +361,7 @@ export default function CreateComplaint() {
               className="btn btn-primary"
               disabled={submitting}
             >
-              {submitting ? 'Submitting…' : 'Submit Complaint'}
+              {submitting ? 'Submitting ticket…' : 'Submit Complaint'}
             </button>
           </div>
 

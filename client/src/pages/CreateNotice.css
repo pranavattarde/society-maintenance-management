@@ -1,31 +1,18 @@
 /* ============================================================
-   CreateNotice Page Styles
+   CreateNotice Page — Component Styles
    ============================================================ */
 
-/* ── Back navigation link ────────────────────────────────────────────────── */
-
-.notice-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-gray-600);
-  text-decoration: none;
-  margin-bottom: var(--space-6);
-  transition: color 0.15s;
-}
-
-.notice-back-link:hover {
-  color: var(--color-primary);
-  text-decoration: none;
+.create-notice-card {
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .notice-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
-  margin-top: var(--space-8);
-  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--color-gray-200);
 }

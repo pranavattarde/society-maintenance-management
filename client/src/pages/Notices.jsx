@@ -168,17 +168,26 @@ export default function Notices() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="page">
+    <div className="page notices-board">
 
       {/* Page header */}
-      <div className="page-header">
-        <h1>Notice Board</h1>
-        {isAdmin && (
-          <Link to="/notices/new" className="btn btn-primary">
-            + New Notice
-          </Link>
-        )}
-      </div>
+      <header className="page-header">
+        <div className="page-header-title">
+          <h1>Notice Board</h1>
+          <p className="page-header-subtitle">Official society announcements and general bulletins</p>
+        </div>
+        <div className="workspace-actions">
+          {isAdmin && (
+            <Link to="/notices/new" className="btn btn-primary">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: '6px' }}>
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              New Notice
+            </Link>
+          )}
+        </div>
+      </header>
 
       {/* Action error (pin/delete failures) */}
       {actionError && (
@@ -190,7 +199,7 @@ export default function Notices() {
       {/* Body ---------------------------------------------------------------- */}
       {loading ? (
         <div className="empty-state">
-          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
+          <div className="spinner" aria-hidden="true"></div>
           <p>Loading notices…</p>
         </div>
 
@@ -199,6 +208,10 @@ export default function Notices() {
 
       ) : notices.length === 0 ? (
         <div className="empty-state">
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: 'var(--color-gray-400)', marginBottom: 'var(--space-2)' }}>
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
           <h3>No notices yet</h3>
           <p>
             {isAdmin
@@ -290,7 +303,12 @@ export default function Notices() {
                 /* ── Read View ────────────────────────────────────────────── */
                 <>
                   {notice.isPinned && (
-                    <span className="notice-pin-badge">📌 Pinned</span>
+                    <span className="notice-pin-badge">
+                      <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" stroke="none" aria-hidden="true" style={{ marginRight: '4px' }}>
+                        <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6l.8 1 .8-1v-6H18v-2l-2-2z" />
+                      </svg>
+                      Pinned
+                    </span>
                   )}
 
                   <h2 className="notice-card-title">{notice.title}</h2>

@@ -2,25 +2,30 @@
    CreateComplaint Page — Component Styles
    ============================================================ */
 
+.create-complaint-card {
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 /* ── Two-column row for Category + Priority selects ─────────────────────── */
 
 .complaint-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 @media (max-width: 600px) {
   .complaint-form-row {
     grid-template-columns: 1fr;
-    gap: var(--space-4);
+    gap: var(--space-2);
   }
 }
 
-/* ── File Upload — modern block dropzone style ────────────────────────────── */
+/* ── File Upload — hidden input, styled label ────────────────────────────── */
 
 .file-upload-input {
-  /* Visually hidden but still accessible */
   position: absolute;
   width: 1px;
   height: 1px;
@@ -33,27 +38,24 @@
 }
 
 .file-upload-label {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-6) var(--space-4);
-  border: 2px dashed var(--color-gray-300);
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-500);
+  padding: 10px 16px;
+  border: 1px dashed var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-600);
   cursor: pointer;
-  background-color: var(--color-gray-50);
-  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.15s ease;
   user-select: none;
-  text-align: center;
+  background-color: var(--color-gray-50);
 }
 
 .file-upload-label:hover {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-light);
+  color: var(--color-accent-dark);
 }
 
 /* ── Selected File Row ───────────────────────────────────────────────────── */
@@ -61,42 +63,42 @@
 .file-selected {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   background: var(--color-gray-50);
   border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
 }
 
 .file-selected-name {
-  flex: 1;
   color: var(--color-gray-800);
-  font-weight: 500;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .file-selected-size {
-  color: var(--color-gray-500);
-  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+  font-size: 11px;
   flex-shrink: 0;
+  font-weight: 500;
 }
 
 .file-clear-btn {
   background: none;
   border: none;
   color: var(--color-danger);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   font-family: var(--font-family);
   cursor: pointer;
-  padding: var(--space-1) var(--space-2);
+  padding: 2px 8px;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  transition: background-color 0.15s;
+  transition: all 0.15s ease;
 }
 
 .file-clear-btn:hover {
@@ -109,50 +111,74 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
-  margin-top: var(--space-8);
-  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--color-gray-200);
 }
 
 /* ── Success State ───────────────────────────────────────────────────────── */
 
 .complaint-success {
-  max-width: 480px;
+  max-width: 500px;
   margin: var(--space-8) auto;
   text-align: center;
   padding: var(--space-10) var(--space-8);
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
 }
 
-.complaint-success-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: var(--space-4);
+.complaint-success-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  border: 1px solid rgba(22, 163, 74, 0.15);
+  box-shadow: var(--shadow-sm);
 }
 
 .complaint-success-title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-lg);
   font-weight: 700;
-  color: var(--color-success);
-  margin-bottom: var(--space-2);
+  color: var(--color-gray-900);
+  margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .complaint-success-ref {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-gray-500);
-  margin-bottom: var(--space-4);
+  margin: 0;
 }
 
 .complaint-success-ref code {
   font-family: monospace;
   background: var(--color-gray-100);
-  padding: 2px var(--space-2);
+  padding: 4px var(--space-2.5);
   border-radius: var(--radius-sm);
+  color: var(--color-gray-800);
+  border: 1px solid var(--color-gray-200);
+  font-weight: 600;
+  font-size: 12px;
 }
 
 .complaint-success-message {
   font-size: var(--font-size-sm);
   color: var(--color-gray-600);
-  margin-bottom: var(--space-8);
+  margin: 0;
+  line-height: 1.6;
+  max-width: 380px;
+  margin-bottom: var(--space-4);
 }
 
 .complaint-success-actions {
@@ -160,4 +186,10 @@
   gap: var(--space-3);
   justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
+}
+
+.complaint-success-actions .btn {
+  flex: 1;
+  min-width: 160px;
 }

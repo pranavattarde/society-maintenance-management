@@ -90,7 +90,16 @@ export default function Login() {
       <div className="auth-card">
 
         <header className="auth-header">
-          <span className="auth-logo" aria-hidden="true">🏢</span>
+          <div className="auth-logo-container">
+            <svg className="auth-logo-svg" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+              <line x1="9" y1="22" x2="9" y2="16" />
+              <line x1="15" y1="22" x2="15" y2="16" />
+              <line x1="9" y1="16" x2="15" y2="16" />
+              <path d="M9 6h6" />
+              <path d="M9 10h6" />
+            </svg>
+          </div>
           <h1 className="auth-title">Welcome Back</h1>
           <p className="auth-subtitle">Sign in to your society account</p>
         </header>

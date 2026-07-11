@@ -1,58 +1,48 @@
 import { Link } from 'react-router-dom';
 import { StatusBadge, PriorityBadge } from './StatusBadge';
 import { CATEGORY_LABELS } from '../utils/constants';
-import { formatDate, truncate } from '../utils/helpers';
+import { formatDate } from '../utils/helpers';
 import './ComplaintCard.css';
 
 /**
- * ComplaintCard — summary view of a single complaint for list pages.
- *
- * Shows the flat number alongside the category so admins can identify
- * which unit submitted each complaint at a glance.
- *
- * @param {{ complaint: object }} props
+ * ComplaintCard — redesigned as a high-density, scannable issue row (V2)
  */
 export default function ComplaintCard({ complaint }) {
   return (
-    <article className="complaint-card card">
+    <Link to={`/complaints/${complaint.id}`} className="complaint-list-row-item">
+      <div className="complaint-row-info">
+        <span className="complaint-row-mono-id">#{complaint.id.slice(-6)}</span>
+        <div className="complaint-row-text">
+          <span className="complaint-row-title">{complaint.title}</span>
+          <div className="complaint-row-subtitles">
+            <span className="complaint-row-category">
+              {CATEGORY_LABELS[complaint.category] || complaint.category}
+            </span>
+            {complaint.resident && (
+              <>
+                <span className="bullet-separator" aria-hidden="true">·</span>
+                <span className="complaint-row-resident">
+                  Flat {complaint.resident.flatNumber} · {complaint.resident.name}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
-      {/* Badges + date */}
-      <div className="complaint-card-header">
-        <div className="flex gap-2 flex-wrap">
-          <StatusBadge status={complaint.status} />
-          <PriorityBadge priority={complaint.priority} />
+      <div className="complaint-row-controls">
+        <div className="complaint-row-badges">
           {complaint.isOverdue && (
             <span className="badge badge-danger">Overdue</span>
           )}
+          <PriorityBadge priority={complaint.priority} />
+          <StatusBadge status={complaint.status} />
         </div>
-        <span className="text-xs text-muted">{formatDate(complaint.createdAt)}</span>
+        <span className="complaint-row-date">{formatDate(complaint.createdAt)}</span>
+        <svg className="complaint-row-chevron" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
       </div>
-
-      {/* Title */}
-      <h3 className="complaint-card-title">{complaint.title}</h3>
-
-      {/* Truncated description */}
-      <p className="text-sm text-muted complaint-card-description">
-        {truncate(complaint.description, 120)}
-      </p>
-
-      {/* Footer — category, flat number, detail link */}
-      <div className="complaint-card-footer">
-        <div className="complaint-card-meta">
-          <span className="text-xs text-muted">
-            {CATEGORY_LABELS[complaint.category] || complaint.category}
-          </span>
-          {complaint.resident && (
-            <span className="text-xs text-muted">
-              Flat {complaint.resident.flatNumber}
-            </span>
-          )}
-        </div>
-        <Link to={`/complaints/${complaint.id}`} className="btn btn-secondary btn-sm">
-          View Details
-        </Link>
-      </div>
-
-    </article>
+    </Link>
   );
 }
