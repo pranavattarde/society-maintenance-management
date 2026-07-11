@@ -5,20 +5,15 @@
 .complaint-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-.complaint-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  gap: var(--space-4);
+  /* Uses standard .card hover styles from global.css */
 }
 
 /* ── Header — badges + date ──────────────────────────────────────────────── */
 
 .complaint-card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
 }
@@ -27,10 +22,11 @@
 
 .complaint-card-title {
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-gray-900);
   margin: 0;
   line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 /* ── Truncated description ───────────────────────────────────────────────── */
@@ -48,13 +44,17 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-gray-100);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-150);
   margin-top: auto;
 }
 
 .complaint-card-meta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
+}
+
+.complaint-card-meta span {
+  font-weight: 500;
 }

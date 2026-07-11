@@ -1,6 +1,8 @@
 .navbar {
   height: var(--navbar-height);
-  background: white;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-gray-200);
   display: flex;
   align-items: center;
@@ -15,33 +17,39 @@
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-weight: 600;
-  font-size: var(--font-size-lg);
+  gap: var(--space-3);
+  font-weight: 700;
+  font-size: var(--font-size-base);
   color: var(--color-gray-900);
   text-decoration: none;
   flex-shrink: 0;
+  letter-spacing: -0.015em;
 }
 
 .navbar-logo {
-  font-size: var(--font-size-xl);
+  font-size: 1.5rem;
   line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.navbar-brand:hover .navbar-logo {
+  transform: scale(1.15) rotate(5deg);
 }
 
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-1.5);
 }
 
 .navbar-link {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-gray-600);
   text-decoration: none;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
 }
 
 .navbar-link:hover {
@@ -58,7 +66,7 @@
 .navbar-user {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
   flex-shrink: 0;
 }
 

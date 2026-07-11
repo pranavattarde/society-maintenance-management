@@ -7,16 +7,17 @@
 .complaint-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 @media (max-width: 600px) {
   .complaint-form-row {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
 }
 
-/* ── File Upload — hidden input, styled label ────────────────────────────── */
+/* ── File Upload — modern block dropzone style ────────────────────────────── */
 
 .file-upload-input {
   /* Visually hidden but still accessible */
@@ -32,17 +33,21 @@
 }
 
 .file-upload-label {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border: 1px dashed var(--color-gray-300);
-  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-4);
+  border: 2px dashed var(--color-gray-300);
+  border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
-  color: var(--color-gray-600);
+  color: var(--color-gray-500);
   cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+  background-color: var(--color-gray-50);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
   user-select: none;
+  text-align: center;
 }
 
 .file-upload-label:hover {
@@ -57,16 +62,18 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   background: var(--color-gray-50);
   border: 1px solid var(--color-gray-200);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-sm);
 }
 
 .file-selected-name {
   flex: 1;
-  color: var(--color-gray-700);
+  color: var(--color-gray-800);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -83,7 +90,7 @@
   border: none;
   color: var(--color-danger);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   font-family: var(--font-family);
   cursor: pointer;
   padding: var(--space-1) var(--space-2);
@@ -102,9 +109,9 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
-  margin-top: var(--space-6);
+  margin-top: var(--space-8);
   padding-top: var(--space-6);
-  border-top: 1px solid var(--color-gray-100);
+  border-top: 1px solid var(--color-gray-200);
 }
 
 /* ── Success State ───────────────────────────────────────────────────────── */

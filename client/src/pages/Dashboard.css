@@ -5,24 +5,24 @@
 /* ── Section wrapper ─────────────────────────────────────────────────────── */
 
 .dashboard-section {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-10);
 }
 
 .dashboard-section-title {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-gray-500);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: var(--space-4);
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-5);
 }
 
-/* ── Auto-fill grid — fills available width, wraps on small screens ───────── */
+/* ── Auto-fill grid — modern sizing for cards ───────── */
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-5);
 }
 
 /* ── Stat Card ───────────────────────────────────────────────────────────── */
@@ -30,19 +30,20 @@
 .stat-card {
   background: white;
   border: 1px solid var(--color-gray-200);
-  border-top: 3px solid transparent;
+  border-top: 4px solid transparent;
   border-radius: var(--radius-lg);
-  padding: var(--space-5) var(--space-6);
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 
 .stat-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--color-gray-300);
 }
 
 /* ── Accent border variants ──────────────────────────────────────────────── */
@@ -57,7 +58,7 @@
 
 .stat-card-label {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-gray-500);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -65,7 +66,8 @@
 
 .stat-card-value {
   font-size: var(--font-size-3xl);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-gray-900);
   line-height: 1;
+  letter-spacing: -0.03em;
 }

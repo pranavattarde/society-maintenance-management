@@ -7,7 +7,7 @@
 .notices-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-6);
 }
 
 /* ── Notice Card ─────────────────────────────────────────────────────────── */
@@ -15,12 +15,8 @@
 .notice-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  transition: box-shadow 0.15s ease;
-}
-
-.notice-card:hover {
-  box-shadow: var(--shadow-md);
+  gap: var(--space-4);
+  /* Uses standard .card hover styles from global.css */
 }
 
 /* Pinned notices get a primary-color left accent */
@@ -35,12 +31,14 @@
   align-items: center;
   gap: var(--space-1);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-primary);
   background: var(--color-primary-light);
-  padding: 2px var(--space-2);
+  padding: 3px var(--space-3);
   border-radius: var(--radius-full);
   align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 /* ── Title ───────────────────────────────────────────────────────────────── */

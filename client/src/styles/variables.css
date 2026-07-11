@@ -4,11 +4,11 @@
    Import this file before any component styles.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
   /* ── Typography ──────────────────────────────────────────── */
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-size-xs:   0.75rem;   /*  12px */
   --font-size-sm:   0.875rem;  /*  14px */
   --font-size-base: 1rem;      /*  16px */
@@ -17,46 +17,46 @@
   --font-size-2xl:  1.5rem;    /*  24px */
   --font-size-3xl:  1.875rem;  /*  30px */
 
-  /* ── Color Palette ───────────────────────────────────────── */
-  --color-primary:       #2563eb;
-  --color-primary-dark:  #1d4ed8;
-  --color-primary-light: #dbeafe;
+  /* ── Color Palette (Modern Indigo/Slate Theme) ───────────── */
+  --color-primary:       #4f46e5; /* Indigo-600 */
+  --color-primary-dark:  #4338ca; /* Indigo-700 */
+  --color-primary-light: #e0e7ff; /* Indigo-100 */
 
-  --color-success:       #16a34a;
-  --color-success-light: #dcfce7;
+  --color-success:       #059669; /* Emerald-600 */
+  --color-success-light: #d1fae5; /* Emerald-100 */
 
-  --color-warning:       #d97706;
-  --color-warning-light: #fef3c7;
+  --color-warning:       #d97706; /* Amber-600 */
+  --color-warning-light: #fef3c7; /* Amber-100 */
 
-  --color-danger:        #dc2626;
-  --color-danger-light:  #fee2e2;
+  --color-danger:        #e11d48; /* Rose-600 */
+  --color-danger-light:  #ffe4e6; /* Rose-100 */
 
-  --color-gray-50:  #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  --color-gray-50:  #f8fafc; /* Slate-50 */
+  --color-gray-100: #f1f5f9; /* Slate-100 */
+  --color-gray-200: #e2e8f0; /* Slate-200 */
+  --color-gray-300: #cbd5e1; /* Slate-300 */
+  --color-gray-400: #94a3b8; /* Slate-400 */
+  --color-gray-500: #64748b; /* Slate-500 */
+  --color-gray-600: #475569; /* Slate-600 */
+  --color-gray-700: #334155; /* Slate-700 */
+  --color-gray-800: #1e293b; /* Slate-800 */
+  --color-gray-900: #0f172a; /* Slate-900 */
 
   /* ── Status Colors ───────────────────────────────────────── */
-  --color-status-open:           #dc2626;
-  --color-status-open-bg:        #fee2e2;
+  --color-status-open:           #e11d48;
+  --color-status-open-bg:        #ffe4e6;
   --color-status-in-progress:    #d97706;
   --color-status-in-progress-bg: #fef3c7;
-  --color-status-resolved:       #16a34a;
-  --color-status-resolved-bg:    #dcfce7;
+  --color-status-resolved:       #059669;
+  --color-status-resolved-bg:    #d1fae5;
 
   /* ── Priority Colors ─────────────────────────────────────── */
-  --color-priority-low:    #16a34a;
-  --color-priority-low-bg: #dcfce7;
+  --color-priority-low:    #059669;
+  --color-priority-low-bg: #d1fae5;
   --color-priority-medium:    #d97706;
   --color-priority-medium-bg: #fef3c7;
-  --color-priority-high:    #dc2626;
-  --color-priority-high-bg: #fee2e2;
+  --color-priority-high:    #e11d48;
+  --color-priority-high-bg: #ffe4e6;
 
   /* ── Spacing Scale ───────────────────────────────────────── */
   --space-1:  0.25rem;
@@ -70,19 +70,19 @@
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* ── Border Radius ───────────────────────────────────────── */
-  --radius-sm:   0.25rem;
-  --radius-md:   0.375rem;
-  --radius-lg:   0.5rem;
-  --radius-xl:   0.75rem;
+  /* ── Border Radius (More rounded, modern iOS feel) ───────── */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
   --radius-full: 9999px;
 
-  /* ── Shadows ─────────────────────────────────────────────── */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  /* ── Shadows (Softer, tinted depth) ──────────────────────── */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
 
   /* ── Layout ──────────────────────────────────────────────── */
   --container-max-width: 1200px;
-  --navbar-height:       64px;
+  --navbar-height:       72px;
 }

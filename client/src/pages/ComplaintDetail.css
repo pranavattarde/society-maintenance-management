@@ -87,10 +87,12 @@
 .complaint-detail-photo {
   width: 100%;
   max-height: 520px;
-  object-fit: contain;
-  border-radius: var(--radius-md);
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-200);
   background: var(--color-gray-50);
   display: block;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ── Admin Status Update Form ─────────────────────────────────────────────── */
@@ -115,30 +117,31 @@
 
 .complaint-history-item {
   display: flex;
-  gap: var(--space-4);
+  gap: var(--space-5);
   position: relative;
-  padding-bottom: var(--space-5);
+  padding-bottom: var(--space-6);
 }
 
 /* Vertical connector between dots */
 .complaint-history-item:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: 5px;
-  top: 14px;
+  left: 7px;
+  top: 18px;
   bottom: 0;
   width: 2px;
   background: var(--color-gray-200);
 }
 
 .complaint-history-dot {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  background: white;
+  border: 3px solid var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-light);
   flex-shrink: 0;
-  margin-top: 3px;
+  margin-top: 4px;
   position: relative;
   z-index: 1;
 }
@@ -147,7 +150,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-1.5);
 }
 
 /* Previous status → New status badges */
@@ -161,7 +164,7 @@
 .complaint-history-arrow {
   color: var(--color-gray-400);
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* "Admin Name · 09 Jul 2026, 08:30 PM" */
@@ -173,13 +176,14 @@
 /* Optional remark block — left border accent */
 .complaint-history-note {
   font-size: var(--font-size-sm);
-  color: var(--color-gray-600);
+  color: var(--color-gray-700);
   background: var(--color-gray-50);
-  border-left: 3px solid var(--color-primary-light);
-  padding: var(--space-2) var(--space-3);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  margin-top: var(--space-1);
+  border-left: 4px solid var(--color-primary);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-2);
   white-space: pre-wrap;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
 }
 
 /* Last item has no bottom padding */
