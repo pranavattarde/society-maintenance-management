@@ -118,7 +118,7 @@ The frontend proxies API requests to the backend via `VITE_API_URL`.
 
 ## API
 
-The backend exposes a RESTful API under `/api`. See [`docs/api-reference.md`](docs/api-reference.md) for the complete endpoint reference with request and response examples.
+The backend exposes a RESTful API under `/api`. See [`docs/api.md`](docs/api.md) for the complete endpoint reference with request and response examples.
 
 **Health check:** `GET /api/health`
 
@@ -127,8 +127,9 @@ The backend exposes a RESTful API under `/api`. See [`docs/api-reference.md`](do
 | Document | Description |
 |---|---|
 | [`docs/architecture.md`](docs/architecture.md) | System design, component responsibilities, design decisions |
-| [`docs/api-reference.md`](docs/api-reference.md) | Complete endpoint reference with examples |
-| [`docs/database-schema.md`](docs/database-schema.md) | ERD, model descriptions, enum values |
+| [`docs/system-design.md`](docs/system-design.md) | High-level system design overview (modular, stateless design) |
+| [`docs/api.md`](docs/api.md) | Complete endpoint reference with examples |
+| [`docs/database.md`](docs/database.md) | ERD, model descriptions, enum values |
 | [`docs/deployment.md`](docs/deployment.md) | Step-by-step production deployment guide |
 
 ## Deployment
