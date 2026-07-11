@@ -90,6 +90,7 @@ export default function ComplaintDetail() {
     return (
       <div className="page">
         <div className="empty-state">
+          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
           <p>Loading complaint…</p>
         </div>
       </div>

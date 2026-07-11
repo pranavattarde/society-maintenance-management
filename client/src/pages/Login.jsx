@@ -49,7 +49,12 @@ export default function Login() {
   // ── Early returns ──────────────────────────────────────────────────────────
 
   if (authLoading) {
-    return <div className="loading-screen">Loading...</div>;
+    return (
+      <div className="loading-screen">
+        <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-2)' }}></div>
+        <span>Loading...</span>
+      </div>
+    );
   }
 
   if (user) {

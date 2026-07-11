@@ -87,6 +87,12 @@ img {
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-gray-200);
   padding: var(--space-6);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
@@ -103,10 +109,15 @@ img {
   font-family: var(--font-family);
   cursor: pointer;
   border: none;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
   white-space: nowrap;
   line-height: 1.5;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn:disabled {
@@ -116,7 +127,7 @@ img {
 }
 
 .btn:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translateY(1px) !important;
 }
 
 .btn-primary {
@@ -391,4 +402,33 @@ img {
   .grid-4 {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Spinner Animation ───────────────────────────────────────────────────── */
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--color-gray-200);
+  border-radius: 50%;
+  border-top-color: var(--color-primary);
+  animation: spin 0.6s linear infinite;
+}
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: var(--space-4);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-50);
 }

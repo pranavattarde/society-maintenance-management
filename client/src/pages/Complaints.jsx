@@ -139,7 +139,10 @@ export default function Complaints() {
 
       {/* Body -------------------------------------------------------------- */}
       {loading ? (
-        <p className="complaints-count">Loading complaints…</p>
+        <div className="empty-state">
+          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
+          <p>Loading complaints…</p>
+        </div>
 
       ) : error ? (
         <div className="alert alert-error" role="alert">{error}</div>

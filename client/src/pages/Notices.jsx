@@ -190,6 +190,7 @@ export default function Notices() {
       {/* Body ---------------------------------------------------------------- */}
       {loading ? (
         <div className="empty-state">
+          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
           <p>Loading notices…</p>
         </div>
 

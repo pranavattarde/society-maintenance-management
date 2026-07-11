@@ -68,6 +68,7 @@ export default function Dashboard() {
     return (
       <div className="page">
         <div className="empty-state">
+          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
           <p>Loading dashboard…</p>
         </div>
       </div>
