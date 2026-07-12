@@ -193,3 +193,111 @@
   flex: 1;
   min-width: 160px;
 }
+
+/* ── AI Review Screen (Before Submit) ─────────────────────────────────────── */
+
+.ai-review-card {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: var(--space-8);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  background-color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.ai-review-header {
+  border-bottom: 1px solid var(--color-gray-100);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.ai-review-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: #4338ca; /* indigo-700 */
+}
+
+.ai-review-subtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin: var(--space-1) 0 0 0;
+}
+
+.ai-review-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+.ai-review-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ai-review-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+.ai-review-check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #dcfce7; /* green-100 */
+  color: #16a34a; /* green-600 */
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ai-review-item-text {
+  font-weight: 500;
+}
+
+.ai-review-resolution-box {
+  padding: var(--space-4);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ai-review-resolution-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gray-400);
+}
+
+.ai-review-resolution-value {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.ai-review-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: var(--space-5);
+}
+
