@@ -61,7 +61,7 @@ export default function CreateNotice() {
         { title: form.title.trim(), content: form.content.trim() },
         token
       );
-      navigate('/notices');
+      navigate('/notices', { state: { success: 'Notice published.' } });
     } catch (err) {
       if (err.errors && err.errors.length > 0) {
         setApiError(err.errors.join(' · '));
@@ -84,14 +84,14 @@ export default function CreateNotice() {
             <line x1="19" y1="12" x2="5" y2="12" />
             <polyline points="12 19 5 12 12 5" />
           </svg>
-          Back to Notice Board
+          Back to Bulletin Board
         </Link>
       </div>
 
       <header className="page-header">
         <div className="page-header-title">
-          <h1>Post a Notice</h1>
-          <p className="page-header-subtitle">Publish a new official announcement to the society bulletin board</p>
+          <h1>Publish Notice</h1>
+          <p className="page-header-subtitle">Broadcast a new official announcement to the community bulletin board</p>
         </div>
       </header>
 

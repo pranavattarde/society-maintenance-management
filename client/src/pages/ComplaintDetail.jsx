@@ -26,6 +26,7 @@ export default function ComplaintDetail() {
   const [remark, setRemark]         = useState('');
   const [updateError, setUpdateError] = useState('');
   const [updating, setUpdating]     = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     async function fetchComplaint() {
@@ -53,6 +54,7 @@ export default function ComplaintDetail() {
     if (!newStatus) return;
 
     setUpdateError('');
+    setSuccessMsg('');
     setUpdating(true);
     try {
       await complaintsApi.updateStatus(
@@ -60,7 +62,9 @@ export default function ComplaintDetail() {
         { status: newStatus, remark: remark.trim() || null },
         token
       );
+      setSuccessMsg('Status updated.');
       setRefetchTrigger((t) => t + 1); // trigger local refresh
+      setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       setUpdateError(err.message || 'Failed to update status');
     } finally {
@@ -72,10 +76,41 @@ export default function ComplaintDetail() {
 
   if (loading) {
     return (
-      <div className="page">
-        <div className="empty-state">
-          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
-          <p>Analyzing ticket detail…</p>
+      <div className="page complaint-detail-workspace animate-fade-in">
+        <div className="back-navigation-container">
+          <div className="skeleton" style={{ width: '120px', height: '14px' }} />
+        </div>
+        <header className="page-header">
+          <div className="page-header-title">
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <div className="skeleton skeleton-badge" />
+              <div className="skeleton skeleton-badge" />
+            </div>
+            <div className="skeleton skeleton-title" style={{ width: '60%' }} />
+          </div>
+        </header>
+
+        <div className="complaint-detail-layout">
+          <main className="complaint-detail-main">
+            <div className="workspace-panel">
+              <div className="skeleton" style={{ width: '100px', height: '18px', marginBottom: '12px' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="skeleton skeleton-text-sm" />
+                <div className="skeleton skeleton-text-sm" />
+                <div className="skeleton skeleton-text-sm" style={{ width: '80%' }} />
+              </div>
+            </div>
+          </main>
+          <aside className="complaint-detail-sidebar">
+            <div className="workspace-panel">
+              <div className="skeleton" style={{ width: '120px', height: '18px', marginBottom: '12px' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div className="skeleton skeleton-text-xs" />
+                <div className="skeleton skeleton-text-xs" />
+                <div className="skeleton skeleton-text-xs" />
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     );
@@ -104,7 +139,7 @@ export default function ComplaintDetail() {
             <line x1="19" y1="12" x2="5" y2="12" />
             <polyline points="12 19 5 12 12 5" />
           </svg>
-          Back to Complaints list
+          Back to Issues
         </Link>
       </div>
 
@@ -128,6 +163,11 @@ export default function ComplaintDetail() {
         
         {/* Left Side (70%) - Description, Photo, History Timeline */}
         <main className="complaint-detail-main">
+          {successMsg && (
+            <div className="alert alert-success" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+              {successMsg}
+            </div>
+          )}
           
           {/* Description */}
           <section className="workspace-panel">
@@ -186,7 +226,7 @@ export default function ComplaintDetail() {
           
           {/* Properties Panel */}
           <div className="workspace-panel">
-            <h2 className="panel-title">Ticket Properties</h2>
+            <h2 className="panel-title">Issue Properties</h2>
             
             <div className="metadata-list">
               <div className="metadata-item">

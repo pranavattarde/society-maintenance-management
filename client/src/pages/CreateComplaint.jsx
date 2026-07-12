@@ -98,6 +98,9 @@ export default function CreateComplaint() {
   // ── AI Review state ─────────────────────────────────────────────────────────
   const [showSubmitReview, setShowSubmitReview] = useState(false);
 
+  // ── Success Notification state ──────────────────────────────────────────────
+  const [successBanner, setSuccessBanner] = useState('');
+
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   function handleChange(e) {
@@ -167,6 +170,8 @@ export default function CreateComplaint() {
     setAiStatus('idle');
     setAiSuggestions(null);
     setAiDismissed(true);
+    setSuccessBanner('AI suggestions applied.');
+    setTimeout(() => setSuccessBanner(''), 4000);
   }
 
   function handleDismissAI() {
@@ -212,6 +217,8 @@ export default function CreateComplaint() {
     setDupMatches([]);
     // Reset review screen
     setShowSubmitReview(false);
+    // Reset success banner
+    setSuccessBanner('');
   }
 
   // ── Duplicate Detection handlers ────────────────────────────────────────────
@@ -395,7 +402,7 @@ export default function CreateComplaint() {
 
   if (submitted) {
     return (
-      <div className="page">
+      <div className="page animate-fade-in">
         <div className="card complaint-success">
           <div className="complaint-success-icon-box" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -403,16 +410,16 @@ export default function CreateComplaint() {
               <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
           </div>
-          <h1 className="complaint-success-title">Complaint Submitted!</h1>
+          <h1 className="complaint-success-title">Your issue has been successfully reported.</h1>
           <p className="complaint-success-ref">
             Reference ID: <code>{submitted.id}</code>
           </p>
           <p className="complaint-success-message">
-            Your maintenance assistance ticket has been successfully logged. The admin team will review it and coordinate the resolution timeline.
+            Your maintenance assistance ticket has been successfully logged. The operations team will review it and coordinate the resolution timeline.
           </p>
           <div className="complaint-success-actions">
             <button onClick={resetForm} className="btn btn-secondary">
-              Submit Another Ticket
+              Report Another Issue
             </button>
             <Link to="/dashboard" className="btn btn-primary">
               Return to Dashboard
@@ -434,19 +441,26 @@ export default function CreateComplaint() {
             <line x1="19" y1="12" x2="5" y2="12" />
             <polyline points="12 19 5 12 12 5" />
           </svg>
-          Back to Complaints list
+          Back to Issues
         </Link>
       </div>
 
       <header className="page-header">
         <div className="page-header-title">
-          <h1>Submit a Complaint</h1>
-          <p className="page-header-subtitle">Initiate a new maintenance assistance ticket for your residence unit</p>
+          <h1>Report Issue</h1>
+          <p className="page-header-subtitle">Log a new maintenance request for your residence unit</p>
         </div>
       </header>
 
       <div className="card create-complaint-card">
         <form onSubmit={handleSubmit} noValidate>
+
+          {/* Success Notification --------------------------------------- */}
+          {successBanner && (
+            <div className="alert alert-success" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+              {successBanner}
+            </div>
+          )}
 
           {/* API Error Banner -------------------------------------------- */}
           {apiError && (
@@ -629,9 +643,9 @@ export default function CreateComplaint() {
                 className="btn btn-primary"
                 disabled={submitting || dupStatus === 'checking'}
               >
-                {submitting        ? 'Submitting ticket…'
+                {submitting        ? 'Reporting issue…'
                  : dupStatus === 'checking' ? 'Checking for duplicates…'
-                 : 'Submit Complaint'}
+                 : 'Report Issue'}
               </button>
             )}
           </div>

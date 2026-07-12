@@ -58,7 +58,7 @@ export default function Complaints() {
       {/* Page Header */}
       <header className="page-header">
         <div className="page-header-title">
-          <h1>Complaints Queue</h1>
+          <h1>Reported Issues Board</h1>
           <p className="page-header-subtitle">Track, filter, and review maintenance activity backlog</p>
         </div>
         <div className="workspace-actions">
@@ -68,7 +68,7 @@ export default function Complaints() {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              New Complaint
+              Report Issue
             </Link>
           )}
         </div>
@@ -137,9 +137,23 @@ export default function Complaints() {
 
       {/* Main Backlog Output */}
       {loading ? (
-        <div className="empty-state">
-          <div className="spinner" aria-hidden="true"></div>
-          <p>Filtering backlog…</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="complaint-list-row-item" style={{ border: '1px solid var(--color-gray-200)', background: '#fff' }}>
+              <div style={{ display: 'flex', gap: '12px', flex: 1, alignItems: 'center' }}>
+                <div className="skeleton" style={{ width: '50px', height: '16px' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className="skeleton" style={{ width: '40%', height: '16px' }} />
+                  <div className="skeleton" style={{ width: '25%', height: '12px' }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div className="skeleton" style={{ width: '60px', height: '20px', borderRadius: '10px' }} />
+                <div className="skeleton" style={{ width: '70px', height: '20px', borderRadius: '10px' }} />
+                <div className="skeleton" style={{ width: '80px', height: '14px' }} />
+              </div>
+            </div>
+          ))}
         </div>
 
       ) : error ? (
@@ -151,14 +165,17 @@ export default function Complaints() {
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <h3>No records found</h3>
+          <h3>Everything looks good 🎉</h3>
           <p>
             {hasActiveFilters
               ? 'Try widening your filter selectors to expand search scope.'
               : isAdmin
-              ? 'All caught up! No operational records are logged.'
+              ? 'There are currently no unresolved complaints.'
               : 'You have not filed any maintenance complaints yet.'}
           </p>
+          {!hasActiveFilters && !isAdmin && (
+            <p style={{ fontSize: '12px', marginTop: '4px' }}>Report a new issue if something requires attention.</p>
+          )}
           {hasActiveFilters && (
             <button
               onClick={clearFilters}

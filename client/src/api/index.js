@@ -43,7 +43,7 @@ async function request(method, path, body = null, token = null) {
   const data = await response.json();
 
   if (!response.ok) {
-    const error = new Error(data.message || 'Request failed');
+    const error = new Error(data.message || "We couldn't complete your request. Please try again in a moment.");
     error.status = response.status;
     error.errors = data.errors || [];
     throw error;

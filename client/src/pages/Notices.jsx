@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { notices as noticesApi } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../utils/constants';
@@ -47,6 +47,8 @@ export default function Notices() {
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState('');
   const [actionError, setActionError] = useState(''); // for pin/delete failures
+  const [successMsg, setSuccessMsg] = useState('');
+  const location = useLocation();
 
   // ── Inline edit state ──────────────────────────────────────────────────────
   const [editingId, setEditingId]         = useState(null);
@@ -77,6 +79,17 @@ export default function Notices() {
 
     fetchNotices();
   }, [token]);
+
+  // Check for redirected state success message
+  useEffect(() => {
+    if (location.state?.success) {
+      setSuccessMsg(location.state.success);
+      // Clean state so refreshing won't keep showing the toast
+      window.history.replaceState({}, document.title);
+      const timer = setTimeout(() => setSuccessMsg(''), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
 
   // ── Edit handlers ──────────────────────────────────────────────────────────
 
@@ -116,6 +129,8 @@ export default function Notices() {
       );
       setNotices((prev) => prev.map((n) => (n.id === id ? data.notice : n)));
       setEditingId(null);
+      setSuccessMsg('Notice updated.');
+      setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       if (err.errors && err.errors.length > 0) {
         setEditError(err.errors.join(' · '));
@@ -142,6 +157,8 @@ export default function Notices() {
           return new Date(b.createdAt) - new Date(a.createdAt);
         });
       });
+      setSuccessMsg(data.notice.isPinned ? 'Notice pinned.' : 'Notice unpinned.');
+      setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       setActionError(err.message || 'Failed to update pin status');
     } finally {
@@ -158,6 +175,8 @@ export default function Notices() {
     try {
       await noticesApi.delete(id, token);
       setNotices((prev) => prev.filter((n) => n.id !== id));
+      setSuccessMsg('Notice deleted.');
+      setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       setActionError(err.message || 'Failed to delete notice');
     } finally {
@@ -173,7 +192,7 @@ export default function Notices() {
       {/* Page header */}
       <header className="page-header">
         <div className="page-header-title">
-          <h1>Notice Board</h1>
+          <h1>Bulletin Board</h1>
           <p className="page-header-subtitle">Official society announcements and general bulletins</p>
         </div>
         <div className="workspace-actions">
@@ -183,11 +202,18 @@ export default function Notices() {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              New Notice
+              Publish Notice
             </Link>
           )}
         </div>
       </header>
+
+      {/* Success notification banner */}
+      {successMsg && (
+        <div className="alert alert-success" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+          {successMsg}
+        </div>
+      )}
 
       {/* Action error (pin/delete failures) */}
       {actionError && (
@@ -198,9 +224,16 @@ export default function Notices() {
 
       {/* Body ---------------------------------------------------------------- */}
       {loading ? (
-        <div className="empty-state">
-          <div className="spinner" aria-hidden="true"></div>
-          <p>Loading notices…</p>
+        <div className="notices-list">
+          {[1, 2, 3].map((i) => (
+            <article key={i} className="notice-card card">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="skeleton" style={{ width: '50%', height: '18px' }} />
+                <div className="skeleton" style={{ width: '80%', height: '14px' }} />
+                <div className="skeleton" style={{ width: '90%', height: '14px' }} />
+              </div>
+            </article>
+          ))}
         </div>
 
       ) : error ? (
@@ -212,11 +245,11 @@ export default function Notices() {
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
-          <h3>No notices yet</h3>
+          <h3>Everything looks good 🎉</h3>
           <p>
             {isAdmin
-              ? 'Post your first notice using the button above.'
-              : 'The admin team has not posted any notices yet.'}
+              ? 'Publish your first announcement using the button above.'
+              : 'There are currently no active announcements.'}
           </p>
         </div>
 

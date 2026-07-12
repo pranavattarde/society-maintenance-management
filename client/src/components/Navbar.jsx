@@ -28,7 +28,7 @@ export default function Navbar() {
           <path d="M9 6h6" />
           <path d="M9 10h6" />
         </svg>
-        <span className="nav-brand-text">Society Management</span>
+        <span className="nav-brand-text">Grand Arch Residences</span>
       </div>
 
       {/* Nav Menu */}
@@ -40,7 +40,7 @@ export default function Navbar() {
             <rect x="14" y="12" width="7" height="9" />
             <rect x="3" y="16" width="7" height="5" />
           </svg>
-          <span className="nav-label">Dashboard</span>
+          <span className="nav-label">Operations Dashboard</span>
         </NavLink>
         <NavLink to="/complaints" className={linkClass}>
           <svg className="nav-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -48,14 +48,14 @@ export default function Navbar() {
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <span className="nav-label">Complaints</span>
+          <span className="nav-label">Reported Issues</span>
         </NavLink>
         <NavLink to="/notices" className={linkClass}>
           <svg className="nav-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
-          <span className="nav-label">Notices</span>
+          <span className="nav-label">Bulletin Board</span>
         </NavLink>
       </nav>
 

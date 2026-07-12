@@ -63,10 +63,64 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="page">
-        <div className="empty-state">
-          <div className="spinner" aria-hidden="true" style={{ marginBottom: 'var(--space-4)' }}></div>
-          <p>Initializing workspace…</p>
+      <div className="page dashboard-workspace">
+        <header className="page-header">
+          <div className="page-header-title">
+            <div className="skeleton skeleton-title" style={{ width: '220px' }} />
+            <div className="skeleton skeleton-subtitle" style={{ width: '340px' }} />
+          </div>
+          <div className="skeleton skeleton-button" />
+        </header>
+
+        <section className="workspace-kpis">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="stat-card skeleton-card">
+              <div className="skeleton" style={{ width: '40%', height: '14px' }} />
+              <div className="skeleton" style={{ width: '60%', height: '32px', margin: '8px 0 4px 0' }} />
+              <div className="skeleton" style={{ width: '80%', height: '12px' }} />
+            </div>
+          ))}
+        </section>
+
+        <div className="workspace-layout">
+          <main className="workspace-main">
+            <div className="workspace-panel">
+              <div className="panel-header" style={{ marginBottom: '16px' }}>
+                <div className="skeleton" style={{ width: '30%', height: '18px', marginBottom: '6px' }} />
+                <div className="skeleton" style={{ width: '60%', height: '12px' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
+                      <div className="skeleton skeleton-avatar" />
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div className="skeleton" style={{ width: '70%', height: '14px' }} />
+                        <div className="skeleton" style={{ width: '40%', height: '11px' }} />
+                      </div>
+                    </div>
+                    <div className="skeleton skeleton-badge" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+          <aside className="workspace-sidebar">
+            <div className="workspace-panel">
+              <div className="panel-header" style={{ marginBottom: '16px' }}>
+                <div className="skeleton" style={{ width: '40%', height: '18px', marginBottom: '6px' }} />
+                <div className="skeleton" style={{ width: '70%', height: '12px' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {[1, 2].map((i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div className="skeleton" style={{ width: '80%', height: '14px' }} />
+                    <div className="skeleton" style={{ width: '90%', height: '12px' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     );
@@ -90,7 +144,7 @@ export default function Dashboard() {
       {/* ── 1. Top Welcome Header ────────────────────────────────────────────── */}
       <header className="page-header">
         <div className="page-header-title">
-          <h1>{isAdmin ? 'Admin Console' : 'Resident Portal'}</h1>
+          <h1>{isAdmin ? 'Operations Dashboard' : 'Resident Hub'}</h1>
           <p className="page-header-subtitle">Welcome back. Operational status for {todayStr}</p>
         </div>
         <div className="workspace-actions">
@@ -100,7 +154,7 @@ export default function Dashboard() {
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z" />
               </svg>
-              Post Announcement
+              Publish Notice
             </Link>
           ) : (
             <Link to="/complaints/new" className="btn btn-primary">
@@ -108,7 +162,7 @@ export default function Dashboard() {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              File Complaint
+              Report Issue
             </Link>
           )}
         </div>
@@ -214,8 +268,9 @@ export default function Dashboard() {
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
                 </div>
-                <h3>Workspace Cleared</h3>
-                <p>All active complaints have been successfully resolved.</p>
+                <h3>Everything looks good 🎉</h3>
+                <p>There are currently no unresolved complaints.</p>
+                <p style={{ fontSize: '12px', marginTop: '4px' }}>Report a new issue if something requires attention.</p>
               </div>
             ) : (
               <div className="dashboard-list">

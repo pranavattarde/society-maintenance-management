@@ -101,7 +101,7 @@ export default function Login() {
             </svg>
           </div>
           <h1 className="auth-title">Welcome Back</h1>
-          <p className="auth-subtitle">Sign in to your society account</p>
+          <p className="auth-subtitle">Sign in to your resident portal</p>
         </header>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
