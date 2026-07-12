@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { complaints as complaintsApi } from '../api/index';
+import { complaints as complaintsApi, ai as aiApi } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { PRIORITY, CATEGORY_LABELS, PRIORITY_LABELS } from '../utils/constants';
+import AIAssistantPanel from '../components/AIAssistantPanel';
 import './CreateComplaint.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -78,6 +79,16 @@ export default function CreateComplaint() {
   const [submitting, setSubmitting]     = useState(false);
   const [submitted, setSubmitted]       = useState(null); // holds created complaint
 
+  // ── AI Assistant state ──────────────────────────────────────────────────────
+  // 'idle' | 'loading' | 'result' | 'error'
+  const [aiStatus,      setAiStatus]      = useState('idle');
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [aiError,       setAiError]       = useState(null);
+  const [aiDismissed,   setAiDismissed]   = useState(false); // user explicitly dismissed
+  const aiDebounceRef = useRef(null);
+  const AI_MIN_CHARS  = 30;  // minimum chars in description before triggering
+  const AI_DELAY_MS   = 1500; // debounce delay
+
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   function handleChange(e) {
@@ -87,6 +98,78 @@ export default function CreateComplaint() {
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
+  }
+
+  // ── AI debounce trigger — watches description field ─────────────────────────
+  useEffect(() => {
+    const description = form.description.trim();
+
+    // Only trigger if not dismissed and description is long enough
+    if (aiDismissed || description.length < AI_MIN_CHARS) {
+      // If description shrinks back below threshold, reset to idle
+      if (aiStatus === 'result' || aiStatus === 'error') {
+        // keep visible once shown — user must manually dismiss
+      } else if (description.length < AI_MIN_CHARS) {
+        setAiStatus('idle');
+        clearTimeout(aiDebounceRef.current);
+      }
+      return;
+    }
+
+    // Debounce: wait for user to stop typing
+    clearTimeout(aiDebounceRef.current);
+    aiDebounceRef.current = setTimeout(() => {
+      // Only auto-trigger once (idle → loading). After that user controls it.
+      if (aiStatus === 'idle') {
+        runAiAnalysis(description);
+      }
+    }, AI_DELAY_MS);
+
+    return () => clearTimeout(aiDebounceRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.description]);
+
+  // ── AI handler functions ────────────────────────────────────────────────────
+
+  async function runAiAnalysis(text) {
+    setAiStatus('loading');
+    setAiError(null);
+    setAiSuggestions(null);
+    try {
+      const response = await aiApi.analyze(text || form.description.trim(), token);
+      setAiSuggestions(response.data);
+      setAiStatus('result');
+    } catch (err) {
+      setAiError(err.message || 'Analysis failed. Please retry.');
+      setAiStatus('error');
+    }
+  }
+
+  function handleAcceptSuggestions() {
+    if (!aiSuggestions) return;
+    setForm((prev) => ({
+      ...prev,
+      title:    aiSuggestions.title    || prev.title,
+      category: aiSuggestions.category || prev.category,
+      priority: aiSuggestions.priority || prev.priority,
+    }));
+    // Clear any validation errors that were showing for these fields
+    setFieldErrors((prev) => ({ ...prev, title: '', category: '', priority: '' }));
+    setAiStatus('idle');
+    setAiSuggestions(null);
+    setAiDismissed(true);
+  }
+
+  function handleDismissAI() {
+    setAiStatus('idle');
+    setAiSuggestions(null);
+    setAiError(null);
+    setAiDismissed(true);
+  }
+
+  function handleRetryAI() {
+    setAiDismissed(false);
+    runAiAnalysis(form.description.trim());
   }
 
   function handlePhotoChange(e) {
@@ -110,6 +193,11 @@ export default function CreateComplaint() {
     setFieldErrors({});
     setApiError('');
     setSubmitted(null);
+    // Reset AI panel so it can trigger fresh on the next complaint
+    setAiStatus('idle');
+    setAiSuggestions(null);
+    setAiError(null);
+    setAiDismissed(false);
   }
 
   async function handleSubmit(e) {
@@ -247,6 +335,16 @@ export default function CreateComplaint() {
               <p className="form-error">{fieldErrors.description}</p>
             )}
           </div>
+
+          {/* ✨ AI Assistant Panel — appears after 30 chars + 1.5s pause ---- */}
+          <AIAssistantPanel
+            status={aiStatus}
+            suggestions={aiSuggestions}
+            error={aiError}
+            onAccept={handleAcceptSuggestions}
+            onDismiss={handleDismissAI}
+            onRetry={handleRetryAI}
+          />
 
           {/* Category + Priority — side by side on desktop --------------- */}
           <div className="complaint-form-row">

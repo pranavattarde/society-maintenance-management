@@ -87,3 +87,17 @@ export const notices = {
 export const dashboard = {
   get: (token) => request('GET', '/dashboard', null, token),
 };
+
+// ─── AI Assistant ─────────────────────────────────────────────────────────────
+
+export const ai = {
+  /**
+   * Sends raw complaint text to the AI service for structured analysis.
+   *
+   * @param {string} complaint - Free-text complaint (min 20 chars)
+   * @param {string} token     - JWT access token
+   * @returns {Promise<{title, category, priority, summary, reasoning, confidence}>}
+   */
+  analyze: (complaint, token) =>
+    request('POST', '/ai/analyze-complaint', { complaint }, token),
+};
