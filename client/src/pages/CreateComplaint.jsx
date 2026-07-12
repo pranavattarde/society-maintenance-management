@@ -4,6 +4,7 @@ import { complaints as complaintsApi, ai as aiApi } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { PRIORITY, CATEGORY_LABELS, PRIORITY_LABELS } from '../utils/constants';
 import AIAssistantPanel from '../components/AIAssistantPanel';
+import DuplicateDetector from '../components/DuplicateDetector';
 import './CreateComplaint.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -88,6 +89,11 @@ export default function CreateComplaint() {
   const aiDebounceRef = useRef(null);
   const AI_MIN_CHARS  = 30;  // minimum chars in description before triggering
   const AI_DELAY_MS   = 1500; // debounce delay
+
+  // ── Duplicate Detection state ───────────────────────────────────────────────
+  // 'idle' | 'checking' | 'found'
+  const [dupStatus,  setDupStatus]  = useState('idle');
+  const [dupMatches, setDupMatches] = useState([]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -198,17 +204,19 @@ export default function CreateComplaint() {
     setAiSuggestions(null);
     setAiError(null);
     setAiDismissed(false);
+    // Reset duplicate detector
+    setDupStatus('idle');
+    setDupMatches([]);
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setApiError('');
+  // ── Duplicate Detection handlers ────────────────────────────────────────────
 
-    const errors = validate(form, photo);
-    setFieldErrors(errors);
-    if (Object.keys(errors).length > 0) return;
-
-    // Build FormData — browser sets the correct multipart Content-Type with boundary
+  /**
+   * Builds FormData and calls the complaints API.
+   * Extracted from handleSubmit so it can be called both from the normal
+   * flow (no duplicates) and from the "Continue Anyway" action.
+   */
+  async function performSubmit() {
     const formData = new FormData();
     formData.append('title',       form.title.trim());
     formData.append('description', form.description.trim());
@@ -229,6 +237,52 @@ export default function CreateComplaint() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setApiError('');
+
+    const errors = validate(form, photo);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    // ── Duplicate detection (non-blocking) ──────────────────────────────────
+    const combinedText = `${form.title} ${form.description}`.trim();
+    setDupStatus('checking');
+    setDupMatches([]);
+
+    try {
+      const response = await aiApi.detectDuplicates(combinedText, token);
+      const matches  = response.data || [];
+
+      if (matches.length > 0) {
+        setDupMatches(matches);
+        setDupStatus('found');
+        // Pause here — user must click "Continue Anyway" or "Edit"
+        return;
+      }
+
+      // No duplicates — proceed straight to submission
+      setDupStatus('idle');
+      await performSubmit();
+    } catch (err) {
+      // AI failure is non-blocking: log and proceed with submission
+      console.warn('[duplicate-check] Skipped:', err.message);
+      setDupStatus('idle');
+      await performSubmit();
+    }
+  }
+
+  async function handleContinueAnyway() {
+    setDupStatus('idle');
+    setDupMatches([]);
+    await performSubmit();
+  }
+
+  function handleEditComplaint() {
+    setDupStatus('idle');
+    setDupMatches([]);
   }
 
   // ── Success State ──────────────────────────────────────────────────────────
@@ -448,19 +502,32 @@ export default function CreateComplaint() {
             )}
           </div>
 
+          {/* 🔍 Duplicate Detector — appears on submit if similar complaints found */}
+          <DuplicateDetector
+            status={dupStatus}
+            matches={dupMatches}
+            onContinue={handleContinueAnyway}
+            onEdit={handleEditComplaint}
+          />
+
           {/* Actions ------------------------------------------------------ */}
           <div className="complaint-form-actions">
             <Link to="/dashboard" className="btn btn-secondary">
               Cancel
             </Link>
-            <button
-              type="submit"
-              id="complaint-submit"
-              className="btn btn-primary"
-              disabled={submitting}
-            >
-              {submitting ? 'Submitting ticket…' : 'Submit Complaint'}
-            </button>
+            {/* Hide native submit when DuplicateDetector is showing its own actions */}
+            {dupStatus !== 'found' && (
+              <button
+                type="submit"
+                id="complaint-submit"
+                className="btn btn-primary"
+                disabled={submitting || dupStatus === 'checking'}
+              >
+                {submitting        ? 'Submitting ticket…'
+                 : dupStatus === 'checking' ? 'Checking for duplicates…'
+                 : 'Submit Complaint'}
+              </button>
+            )}
           </div>
 
         </form>

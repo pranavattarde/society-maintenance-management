@@ -100,4 +100,14 @@ export const ai = {
    */
   analyze: (complaint, token) =>
     request('POST', '/ai/analyze-complaint', { complaint }, token),
+
+  /**
+   * Checks new complaint text against recent unresolved complaints for duplicates.
+   *
+   * @param {string} complaint - Combined title + description text (min 10 chars)
+   * @param {string} token     - JWT access token
+   * @returns {Promise<{data: [{complaintId, title, category, status, createdAt, similarity, reason}]}>}
+   */
+  detectDuplicates: (complaint, token) =>
+    request('POST', '/ai/detect-duplicates', { complaint }, token),
 };

@@ -8,7 +8,7 @@
  * Response: { title, category, priority, summary, reasoning, confidence }
  */
 
-const { analyzeComplaint } = require('../services/ai.service');
+const { analyzeComplaint, detectDuplicates } = require('../services/ai.service');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -46,4 +46,35 @@ async function analyzeComplaintHandler(req, res, next) {
   }
 }
 
-module.exports = { analyzeComplaintHandler };
+/**
+ * Detects potential duplicate complaints before submission.
+ *
+ * POST /api/ai/detect-duplicates
+ * Body: { complaint: string }
+ * Returns: { success: true, data: [{complaintId, title, category, status, createdAt, similarity, reason}] }
+ */
+async function detectDuplicatesHandler(req, res, next) {
+  try {
+    const { complaint } = req.body;
+
+    if (!complaint || typeof complaint !== 'string') {
+      throw new ApiError(400, 'complaint field is required and must be a string.');
+    }
+
+    const trimmed = complaint.trim();
+    if (trimmed.length < 10) {
+      throw new ApiError(400, 'Complaint text must be at least 10 characters.');
+    }
+
+    const matches = await detectDuplicates(trimmed);
+
+    res.status(200).json({
+      success: true,
+      data: matches,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { analyzeComplaintHandler, detectDuplicatesHandler };
