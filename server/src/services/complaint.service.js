@@ -2,7 +2,7 @@ const { Readable } = require('stream');
 const cloudinary = require('../config/cloudinary');
 const prisma = require('../config/db');
 const ApiError = require('../utils/ApiError');
-const { ROLES, STATUS, CATEGORY, ALLOWED_STATUS_TRANSITIONS, OVERDUE_THRESHOLD_DAYS } = require('../utils/constants');
+const { ROLES, STATUS, CATEGORY, PRIORITY, ALLOWED_STATUS_TRANSITIONS, OVERDUE_THRESHOLD_DAYS } = require('../utils/constants');
 const { sendStatusUpdateEmail } = require('./email.service');
 
 // ─── Private Helpers ──────────────────────────────────────────────────────────
@@ -107,8 +107,10 @@ async function createComplaint(data, residentId, file) {
  *   - ADMIN:    all complaints
  *
  * Supported filters (all optional, invalid values are silently ignored):
- *   - status   {string}  — exact match against STATUS enum
+ *   - status   {string}  — exact match against STATUS enum or 'UNRESOLVED'
  *   - category {string}  — exact match against CATEGORY enum
+ *   - priority {string}  — exact match against PRIORITY enum
+ *   - search   {string}  — text matching title, description, flat, name
  *   - date     {string}  — ISO date string; returns complaints created on or
  *                          after midnight UTC of that day (admin only)
  *
@@ -119,7 +121,7 @@ async function createComplaint(data, residentId, file) {
  * @returns {object[]}
  */
 async function listComplaints(filters, user) {
-  const { status, category, date } = filters;
+  const { status, category, priority, search, date } = filters;
 
   const where = {};
 
@@ -128,13 +130,36 @@ async function listComplaints(filters, user) {
     where.residentId = user.id;
   }
 
-  // Validate filter values against known enums — silently ignore unknown values
-  if (status && Object.values(STATUS).includes(status)) {
-    where.status = status;
+  // Validate and apply status filter
+  if (status) {
+    if (status === 'UNRESOLVED') {
+      where.status = { in: [STATUS.OPEN, STATUS.IN_PROGRESS] };
+    } else if (Object.values(STATUS).includes(status)) {
+      where.status = status;
+    }
   }
+
+  // Validate and apply category filter
   if (category && Object.values(CATEGORY).includes(category)) {
     where.category = category;
   }
+
+  // Validate and apply priority filter
+  if (priority && Object.values(PRIORITY).includes(priority)) {
+    where.priority = priority;
+  }
+
+  // Apply search keyword filter
+  if (search && typeof search === 'string' && search.trim()) {
+    const term = search.trim();
+    where.OR = [
+      { title: { contains: term, mode: 'insensitive' } },
+      { description: { contains: term, mode: 'insensitive' } },
+      { resident: { flatNumber: { contains: term, mode: 'insensitive' } } },
+      { resident: { name: { contains: term, mode: 'insensitive' } } },
+    ];
+  }
+
   // Date filter: show complaints created on or after midnight of the given date
   if (date) {
     const since = new Date(date);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { complaints as complaintsApi } from '../api/index';
+import { complaints as complaintsApi, ai as aiApi } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, STATUS_LABELS, CATEGORY_LABELS, ALLOWED_STATUS_TRANSITIONS } from '../utils/constants';
 import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
@@ -18,6 +18,38 @@ export default function ComplaintDetail() {
   // ── Complaint state ────────────────────────────────────────────────────────
   const [complaint, setComplaint]     = useState(null);
   const [loading, setLoading]         = useState(true);
+
+  // ── AI Writing Assistant state ──────────────────────────────────────────────
+  const [aiInstruction, setAiInstruction]     = useState('');
+  const [aiLoading, setAiLoading]             = useState(false);
+  const [aiError, setAiError]                 = useState('');
+  const [aiResult, setAiResult]               = useState(null);
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
+
+  async function handleAiGenerateResolution(e) {
+    e.preventDefault();
+    if (!aiInstruction.trim()) return;
+
+    setAiLoading(true);
+    setAiError('');
+    setAiResult(null);
+    try {
+      const response = await aiApi.generateText('RESOLUTION', aiInstruction.trim(), token);
+      setAiResult(response.data);
+    } catch (err) {
+      setAiError(err.message || 'Failed to generate resolution message.');
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  function handleAcceptResolutionSuggestions() {
+    if (!aiResult) return;
+    setRemark(aiResult.content || '');
+    setShowAiAssistant(false);
+    setAiResult(null);
+    setAiInstruction('');
+  }
   const [error, setError]             = useState('');
   const [refetchTrigger, setRefetchTrigger] = useState(0);
 
@@ -291,6 +323,77 @@ export default function ComplaintDetail() {
                     ))}
                   </select>
                 </div>
+
+                {newStatus === 'RESOLVED' && (
+                  <div className="ai-resolution-assistant-section" style={{ marginBottom: 'var(--space-3)' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-xs"
+                      onClick={() => setShowAiAssistant((prev) => !prev)}
+                      style={{ width: '100%', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    >
+                      <span>✨</span> {showAiAssistant ? 'Hide AI Helper' : 'Use AI Resolution Writer'}
+                    </button>
+
+                    {showAiAssistant && (
+                      <div className="ai-notice-assistant-box" style={{ background: 'var(--color-gray-50)', padding: 'var(--space-3)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-gray-200)', marginBottom: 'var(--space-3)' }}>
+                        <div className="form-group" style={{ marginBottom: '0' }}>
+                          <label className="form-label" style={{ fontSize: '10px', fontWeight: '600' }}>
+                            AI Resolution Instructions
+                          </label>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <input
+                              type="text"
+                              className="form-input"
+                              placeholder="e.g. Resolved lift issue"
+                              value={aiInstruction}
+                              onChange={(e) => setAiInstruction(e.target.value)}
+                              disabled={aiLoading}
+                              style={{ flex: 1, padding: '4px 8px', fontSize: 'var(--font-size-xs)' }}
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm"
+                              onClick={handleAiGenerateResolution}
+                              disabled={aiLoading || !aiInstruction.trim()}
+                              style={{ padding: '0 8px' }}
+                            >
+                              {aiLoading ? '...' : 'Gen'}
+                            </button>
+                          </div>
+                          {aiError && (
+                            <p className="form-error" style={{ marginTop: '2px', fontSize: '10px' }}>{aiError}</p>
+                          )}
+                        </div>
+
+                        {aiResult && (
+                          <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--color-gray-200)' }}>
+                            <span className="text-muted text-xs" style={{ fontWeight: '600' }}>Suggested Message:</span>
+                            <p style={{ fontSize: 'var(--font-size-xs)', background: '#fff', padding: '6px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-gray-200)', color: 'var(--color-gray-700)', margin: '4px 0' }}>
+                              {aiResult.content}
+                            </p>
+                            <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-xs"
+                                onClick={handleAcceptResolutionSuggestions}
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-xs"
+                                onClick={() => setAiResult(null)}
+                              >
+                                Clear
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label htmlFor="remark" className="form-label">

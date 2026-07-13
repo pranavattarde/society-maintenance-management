@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { complaints as complaintsApi } from '../api/index';
+import { complaints as complaintsApi, ai as aiApi } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, STATUS_LABELS, CATEGORY_LABELS } from '../utils/constants';
 import ComplaintCard from '../components/ComplaintCard';
@@ -20,9 +20,16 @@ export default function Complaints() {
   // Filter state
   const [statusFilter, setStatusFilter]     = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [searchFilter, setSearchFilter]     = useState('');
   const [dateFilter, setDateFilter]         = useState('');
 
-  const hasActiveFilters = Boolean(statusFilter || categoryFilter || dateFilter);
+  // AI Search intent state
+  const [aiQuery, setAiQuery]               = useState('');
+  const [aiLoading, setAiLoading]           = useState(false);
+  const [aiError, setAiError]               = useState('');
+
+  const hasActiveFilters = Boolean(statusFilter || categoryFilter || priorityFilter || searchFilter || dateFilter);
 
   useEffect(() => {
     async function fetchComplaints() {
@@ -32,6 +39,8 @@ export default function Complaints() {
         const params = {};
         if (statusFilter)              params.status   = statusFilter;
         if (categoryFilter)            params.category = categoryFilter;
+        if (priorityFilter)            params.priority = priorityFilter;
+        if (searchFilter)              params.search   = searchFilter;
         if (isAdmin && dateFilter)     params.date     = dateFilter;
 
         const data = await complaintsApi.list(params, token);
@@ -44,12 +53,39 @@ export default function Complaints() {
     }
 
     fetchComplaints();
-  }, [statusFilter, categoryFilter, dateFilter, token, isAdmin]);
+  }, [statusFilter, categoryFilter, priorityFilter, searchFilter, dateFilter, token, isAdmin]);
 
   function clearFilters() {
     setStatusFilter('');
     setCategoryFilter('');
+    setPriorityFilter('');
+    setSearchFilter('');
     setDateFilter('');
+    setAiQuery('');
+    setAiError('');
+  }
+
+  async function handleAiSearch(e) {
+    e.preventDefault();
+    if (!aiQuery.trim()) return;
+
+    setAiLoading(true);
+    setAiError('');
+    try {
+      const response = await aiApi.parseSearch(aiQuery.trim(), token);
+      const parsed = response.data;
+      if (parsed) {
+        setStatusFilter(parsed.status || '');
+        setCategoryFilter(parsed.category || '');
+        setPriorityFilter(parsed.priority || '');
+        setSearchFilter(parsed.search || '');
+        if (parsed.date) setDateFilter(parsed.date);
+      }
+    } catch (err) {
+      setAiError(err.message || 'Could not parse AI search request.');
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   return (
@@ -73,6 +109,46 @@ export default function Complaints() {
           )}
         </div>
       </header>
+
+      {/* 🔮 Natural Language AI Search Bar (Admin Only) */}
+      {isAdmin && (
+        <form onSubmit={handleAiSearch} className="ai-search-bar-container">
+          <div className="ai-search-input-wrapper">
+            <span className="ai-search-sparkle-icon">✨</span>
+            <input
+              type="text"
+              className="form-input ai-search-input"
+              placeholder="Search with AI: 'Show unresolved lift complaints from Tower B' or 'Show high priority plumbing issues yesterday'..."
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+              disabled={aiLoading}
+              aria-label="Natural Language AI Search Bar"
+            />
+            {aiQuery && (
+              <button
+                type="button"
+                className="ai-search-clear-btn"
+                onClick={() => { setAiQuery(''); setAiError(''); }}
+                aria-label="Clear AI query text"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary ai-search-submit-btn"
+            disabled={aiLoading || !aiQuery.trim()}
+          >
+            {aiLoading ? 'Parsing...' : 'Search'}
+          </button>
+        </form>
+      )}
+      {aiError && (
+        <div className="alert alert-error ai-search-error-alert" role="alert" style={{ marginTop: '-12px' }}>
+          {aiError}
+        </div>
+      )}
 
       {/* Inline Filters Toolbar */}
       <div className="complaints-filters">
@@ -105,6 +181,34 @@ export default function Complaints() {
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
+          </div>
+
+          <div className="complaints-filter-group">
+            <label className="complaints-filter-label">Priority</label>
+            <select
+              className="form-select"
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              aria-label="Filter by priority"
+            >
+              <option value="">All Priorities</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+          </div>
+
+          <div className="complaints-filter-group">
+            <label className="complaints-filter-label">Search</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Keywords, flats..."
+              style={{ width: '150px' }}
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              aria-label="Keyword text search"
+            />
           </div>
 
           {isAdmin && (

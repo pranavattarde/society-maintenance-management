@@ -359,4 +359,183 @@ async function detectDuplicates(newComplaintText) {
   throw new ApiError(502, 'AI service temporarily unavailable.');
 }
 
-module.exports = { analyzeComplaint, detectDuplicates };
+// ─── Search Intent Parser ─────────────────────────────────────────────────────
+
+async function parseSearchIntent(query) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new ApiError(503, 'AI service is not configured.');
+
+  const currentDateStr = new Date().toISOString().split('T')[0];
+  const systemPrompt = `You are a search intent parser for a residential society complaint backlog.
+Extract the user's search intent into a structured JSON filter.
+
+Rules:
+- Respond with STRICT JSON only.
+- Fields to return:
+  - "status": "OPEN" | "IN_PROGRESS" | "RESOLVED" | "UNRESOLVED" | null
+  - "category": "PLUMBING" | "ELECTRICAL" | "CLEANING" | "SECURITY" | "LIFT" | "PARKING" | "OTHER" | null
+  - "priority": "LOW" | "MEDIUM" | "HIGH" | null
+  - "date": "YYYY-MM-DD" | null (calculate based on context: today is ${currentDateStr}. E.g. "yesterday" is 1 day ago)
+  - "search": a keyword string query (e.g. flat number "B-302", tower "Tower A", resident name, or keywords like "leak") or null.
+
+Current Date: ${currentDateStr}
+
+Examples:
+"Show unresolved plumbing complaints from Tower A" -> {"status": "UNRESOLVED", "category": "PLUMBING", "search": "Tower A"}
+"Show complaints from Flat B-302" -> {"search": "B-302"}
+"Show high priority lift complaints" -> {"priority": "HIGH", "category": "LIFT"}
+"Show electrical complaints today" -> {"category": "ELECTRICAL", "date": "${currentDateStr}"}
+
+Respond ONLY with the JSON object.`;
+
+  const errors = [];
+  for (const model of MODELS) {
+    try {
+      const rawContent = await callGroqModel(model, `Parse this search query: "${query}"`, apiKey, systemPrompt);
+      const cleaned = rawContent.replace(/```(?:json)?/gi, '').trim();
+      const parsed = JSON.parse(cleaned);
+
+      const status = parsed.status ? parsed.status.toUpperCase().trim() : null;
+      const category = parsed.category ? parsed.category.toUpperCase().trim() : null;
+      const priority = parsed.priority ? parsed.priority.toUpperCase().trim() : null;
+
+      return {
+        status: ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'UNRESOLVED'].includes(status) ? status : null,
+        category: ['PLUMBING', 'ELECTRICAL', 'CLEANING', 'SECURITY', 'LIFT', 'PARKING', 'OTHER'].includes(category) ? category : null,
+        priority: ['LOW', 'MEDIUM', 'HIGH'].includes(priority) ? priority : null,
+        date: parsed.date || null,
+        search: parsed.search || null,
+      };
+    } catch (err) {
+      console.warn(`[ai.service] parseSearchIntent model ${model} failed: ${err.message}`);
+      errors.push(err.message);
+    }
+  }
+  throw new ApiError(502, 'AI search intent service temporarily unavailable.');
+}
+
+// ─── Operations Insights Generator ────────────────────────────────────────────
+
+async function generateOperationsInsights() {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new ApiError(503, 'AI service is not configured.');
+
+  const [activeList, total, open, progress, resolved] = await Promise.all([
+    prisma.complaint.findMany({
+      where: { status: { in: ['OPEN', 'IN_PROGRESS'] } },
+      orderBy: { createdAt: 'desc' },
+      take: 40,
+      select: {
+        title: true,
+        category: true,
+        priority: true,
+        status: true,
+        createdAt: true,
+        resident: { select: { flatNumber: true } },
+      },
+    }),
+    prisma.complaint.count(),
+    prisma.complaint.count({ where: { status: 'OPEN' } }),
+    prisma.complaint.count({ where: { status: 'IN_PROGRESS' } }),
+    prisma.complaint.count({ where: { status: 'RESOLVED' } }),
+  ]);
+
+  if (total === 0 || activeList.length < 2) {
+    return {
+      insights: ['Insufficient data exists; meaningful insights cannot yet be generated.'],
+    };
+  }
+
+  const activeFormatted = activeList
+    .map((c, i) => `${i + 1}. "${c.title}" - Category: ${c.category}, Priority: ${c.priority}, Status: ${c.status}, Unit: ${c.resident?.flatNumber}, Created: ${c.createdAt.toISOString().split('T')[0]}`)
+    .join('\n');
+
+  const statsText = `
+Total Registered Tickets: ${total}
+Open Tickets: ${open}
+In Progress Tickets: ${progress}
+Resolved Tickets: ${resolved}
+
+Recent Active (Unresolved) Complaints List:
+${activeFormatted}
+  `.trim();
+
+  const systemPrompt = `You are a property operations analyst.
+Analyze the provided community complaints log and statistics. Generate a list of exactly 4 to 6 concise, professional, actionable operational insights.
+
+Rules:
+- Bullet points must be strictly factual, derived from the logs and statistics. No hallucinations.
+- Identify categories with high activity, repeat locations/flats, SLA risks (tickets open for over a week), or bottlenecks.
+- Keep each point under 15 words.
+- Format your response as a strict JSON object:
+  {"insights": ["Insight 1", "Insight 2", ...]}
+
+Respond with only the JSON object.`;
+
+  const errors = [];
+  for (const model of MODELS) {
+    try {
+      const rawContent = await callGroqModel(model, statsText, apiKey, systemPrompt);
+      const cleaned = rawContent.replace(/```(?:json)?/gi, '').trim();
+      const parsed = JSON.parse(cleaned);
+      if (parsed && Array.isArray(parsed.insights)) {
+        return parsed;
+      }
+    } catch (err) {
+      console.warn(`[ai.service] generateOperationsInsights model ${model} failed: ${err.message}`);
+      errors.push(err.message);
+    }
+  }
+  return {
+    insights: ['AI service is temporarily unavailable. Could not load operations insights.'],
+  };
+}
+
+// ─── Writing Assistant ────────────────────────────────────────────────────────
+
+async function generateText(type, instruction) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new ApiError(503, 'AI service is not configured.');
+
+  const systemPrompt = `You are a professional administrative writing assistant for residential community operations.
+Based on the user's brief instruction, generate a high-quality, professional response.
+
+If type is "NOTICE", generate a formal community announcement. Return strictly this JSON structure:
+{
+  "title": "Clear, professional notice title",
+  "content": "Well-structured notice content with appropriate formatting",
+  "summary": "One sentence summary of the notice",
+  "tone": "Brief description of the chosen tone (e.g. Formal, urgent, polite)"
+}
+
+If type is "RESOLUTION", generate a courteous resident-facing resolution message. Return strictly this JSON structure:
+{
+  "content": "Courteous resolution message explaining the issue has been resolved, asking them to check, and thanking them for patience."
+}
+
+Ensure the output is STRICT JSON with no markdown formatting outside it.`;
+
+  const userMessage = `Type: ${type}\nInstruction: ${instruction}`;
+
+  const errors = [];
+  for (const model of MODELS) {
+    try {
+      const rawContent = await callGroqModel(model, userMessage, apiKey, systemPrompt);
+      const cleaned = rawContent.replace(/```(?:json)?/gi, '').trim();
+      const parsed = JSON.parse(cleaned);
+      return parsed;
+    } catch (err) {
+      console.warn(`[ai.service] generateText model ${model} failed: ${err.message}`);
+      errors.push(err.message);
+    }
+  }
+  throw new ApiError(502, 'AI writing assistant is temporarily unavailable.');
+}
+
+module.exports = {
+  analyzeComplaint,
+  detectDuplicates,
+  parseSearchIntent,
+  generateOperationsInsights,
+  generateText,
+};

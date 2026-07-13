@@ -1,120 +1,58 @@
-# Deployment Guide
+# Production Deployment Guide
 
-## Architecture Overview
-
-| Layer | Platform | Notes |
-|---|---|---|
-| Frontend | **Vercel** | Auto-deploy on push to `main` |
-| Backend | **Render** | Docker container, always-on |
-| Database | **Neon PostgreSQL** | Serverless, connection pooling via connection string |
-| Storage | **Cloudinary** | Photo uploads |
-| Email | **Resend** | Transactional email |
+This guide provides step-by-step instructions to deploy Grand Arch Residences to Cloud / SaaS provider platforms (Vercel, Render, and Neon).
 
 ---
 
-## Database — Neon
+## 1. Database: Neon PostgreSQL
 
-1. Create a free account at [neon.tech](https://neon.tech)
-2. Create a new project: `society-maintenance`
-3. Copy the **Connection string** from the Neon dashboard
-4. The connection string format:
+1. Sign up at [Neon](https://neon.tech) and create a new PostgreSQL project.
+2. In the Neon dashboard, navigate to **Connection String**.
+3. Choose the connection mode (Pooled connection is recommended for serverless runtimes).
+4. Copy the connection string. It will look like:
    ```
-   postgresql://user:password@host.neon.tech/dbname?sslmode=require
+   postgresql://alex:password@ep-cool-snowflake-12345.us-east-2.aws.neon.tech/neondb?sslmode=require
    ```
-5. Set this as `DATABASE_URL` in your backend environment
+5. Save this as `DATABASE_URL` in your backend environment configuration.
 
 ---
 
-## Backend — Render
+## 2. Backend: Render Deployment
 
-### Initial setup
-
-1. Push your repository to GitHub
-2. Go to [render.com](https://render.com) → **New → Web Service**
-3. Connect your GitHub repository
-4. Configure the service:
-
-| Setting | Value |
-|---|---|
-| **Name** | `society-maintenance-server` |
-| **Root directory** | `server` |
-| **Runtime** | Docker |
-| **Dockerfile path** | `./Dockerfile` |
-| **Instance type** | Free (or Starter for production) |
-
-### Environment variables (Render dashboard)
-
-Set all variables from `.env.example` in the **Environment** tab:
-
-```
-NODE_ENV=production
-DATABASE_URL=<Neon connection string>
-JWT_SECRET=<secure random string>
-JWT_EXPIRES_IN=7d
-CLIENT_URL=<Vercel frontend URL>
-CLOUDINARY_CLOUD_NAME=<value>
-CLOUDINARY_API_KEY=<value>
-CLOUDINARY_API_SECRET=<value>
-RESEND_API_KEY=<value>
-FROM_EMAIL=<verified sender>
-```
-
-### Post-deploy database setup
-
-After first deploy, open the Render **Shell** tab and run:
-
-```bash
-npx prisma db push
-node prisma/seed.js
-```
+1. Sign up at [Render](https://render.com) and link your GitHub repository.
+2. Click **New +** and select **Web Service**.
+3. Connect your repository.
+4. Set the following build properties:
+   - **Runtime:** `Docker`
+   - **Dockerfile Path:** `server/Dockerfile`
+5. Expand **Advanced** and add the following Environment Variables:
+   - `NODE_ENV`: `production`
+   - `DATABASE_URL`: *(Your Neon Connection String)*
+   - `JWT_SECRET`: *(A random 32-character key)*
+   - `JWT_EXPIRES_IN`: `7d`
+   - `CLIENT_URL`: *(The URL of your deployed frontend on Vercel)*
+   - `CLOUDINARY_CLOUD_NAME`: *(Your Cloudinary account name)*
+   - `CLOUDINARY_API_KEY`: *(Your Cloudinary API key)*
+   - `CLOUDINARY_API_SECRET`: *(Your Cloudinary secret key)*
+   - `RESEND_API_KEY`: *(Your Resend API key)*
+   - `FROM_EMAIL`: *(Your verified Resend sender email address)*
+   - `GROQ_API_KEY`: *(Your Groq API key)*
+6. Set the **Start Command** inside Docker to handle Prisma migrations automatically on launch:
+   ```bash
+   npx prisma db push --accept-data-loss && npm run db:seed && node server.js
+   ```
+7. Click **Create Web Service**. Render will build and deploy the Docker container.
 
 ---
 
-## Frontend — Vercel
+## 3. Frontend: Vercel Deployment
 
-1. Go to [vercel.com](https://vercel.com) → **New Project**
-2. Import your GitHub repository
-3. Configure:
-
-| Setting | Value |
-|---|---|
-| **Framework Preset** | Vite |
-| **Root directory** | `client` |
-| **Build command** | `npm run build` |
-| **Output directory** | `dist` |
-
-### Environment variable (Vercel dashboard)
-
-```
-VITE_API_URL=https://society-maintenance-server.onrender.com/api
-```
-
-The `client/vercel.json` file handles SPA routing rewrites automatically.
-
----
-
-## Local Production Test with Docker
-
-To test the full production stack locally:
-
-```bash
-# Build and run server in Docker (requires .env at project root)
-docker compose up --build
-```
-
-Then run the frontend dev server against the Docker backend:
-```bash
-VITE_API_URL=http://localhost:5000/api npm run dev
-```
-
----
-
-## Checklist Before Deployment
-
-- [ ] `.env` is not committed to Git
-- [ ] `JWT_SECRET` is a cryptographically random string (minimum 32 chars)
-- [ ] `DATABASE_URL` includes `?sslmode=require` for Neon
-- [ ] `FROM_EMAIL` domain is verified in Resend
-- [ ] `CLIENT_URL` on the backend matches the exact Vercel URL (including `https://`)
-- [ ] Prisma schema has been pushed and seed has been run
-- [ ] Health check endpoint responds: `GET /api/health`
+1. Sign up at [Vercel](https://vercel.com).
+2. Click **Add New** → **Project** and import your repository.
+3. In the project setup wizard:
+   - Set **Root Directory** to `client`.
+   - Set **Framework Preset** to `Vite`.
+4. Add the following Environment Variable:
+   - `VITE_API_URL`: *(The URL of your deployed backend on Render, e.g. `https://your-service.onrender.com/api`)*
+5. Click **Deploy**. Vercel will build the React application and deploy the static assets to edge servers.
+6. The `client/vercel.json` file handles routing redirects, ensuring SPA paths resolve correctly without 404s.

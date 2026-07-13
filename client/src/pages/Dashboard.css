@@ -432,3 +432,102 @@
     display: none;
   }
 }
+
+/* ── AI Operations Insights ──────────────────────────────────────────────── */
+
+.ai-insights-panel {
+  border-left: 4px solid var(--color-accent) !important;
+  background-color: var(--color-gray-50) !important;
+}
+
+.ai-insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.ai-insights-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.ai-insights-sparkle {
+  color: var(--color-accent);
+}
+
+.ai-insights-timestamp {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-gray-400);
+  margin-left: var(--space-3);
+  border-left: 1px solid var(--color-gray-200);
+  padding-left: var(--space-3);
+}
+
+.ai-insights-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-insights-body {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: 1.5;
+}
+
+.ai-insights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ai-insight-item {
+  display: flex;
+  gap: var(--space-2.5);
+  align-items: flex-start;
+}
+
+.ai-insight-dot {
+  color: var(--color-accent);
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ai-insight-text {
+  flex: 1;
+}
+
+.ai-insights-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-insights-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--color-danger);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+}

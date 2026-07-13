@@ -8,7 +8,13 @@
  * Response: { title, category, priority, summary, reasoning, confidence }
  */
 
-const { analyzeComplaint, detectDuplicates } = require('../services/ai.service');
+const {
+  analyzeComplaint,
+  detectDuplicates,
+  parseSearchIntent,
+  generateOperationsInsights,
+  generateText,
+} = require('../services/ai.service');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -77,4 +83,57 @@ async function detectDuplicatesHandler(req, res, next) {
   }
 }
 
-module.exports = { analyzeComplaintHandler, detectDuplicatesHandler };
+/**
+ * Parse natural language search into structured query filters.
+ */
+async function parseSearchHandler(req, res, next) {
+  try {
+    const { query } = req.body;
+    const filters = await parseSearchIntent(query.trim());
+    res.status(200).json({
+      success: true,
+      data: filters,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Fetch and return AI operational insights based on DB state.
+ */
+async function getOperationsInsightsHandler(req, res, next) {
+  try {
+    const insights = await generateOperationsInsights();
+    res.status(200).json({
+      success: true,
+      data: insights,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Generate writing assistant text.
+ */
+async function generateTextHandler(req, res, next) {
+  try {
+    const { type, instruction } = req.body;
+    const generated = await generateText(type, instruction.trim());
+    res.status(200).json({
+      success: true,
+      data: generated,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  analyzeComplaintHandler,
+  detectDuplicatesHandler,
+  parseSearchHandler,
+  getOperationsInsightsHandler,
+  generateTextHandler,
+};

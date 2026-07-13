@@ -110,4 +110,34 @@ export const ai = {
    */
   detectDuplicates: (complaint, token) =>
     request('POST', '/ai/detect-duplicates', { complaint }, token),
+
+  /**
+   * Parses natural language queries into structured search filter criteria.
+   *
+   * @param {string} query - The natural language search query
+   * @param {string} token - JWT access token
+   * @returns {Promise<{data: {status, category, priority, date, search}}>}
+   */
+  parseSearch: (query, token) =>
+    request('POST', '/ai/parse-search', { query }, token),
+
+  /**
+   * Fetches AI operations insights summaries.
+   *
+   * @param {string} token - JWT access token
+   * @returns {Promise<{data: {insights: string[]}}>}
+   */
+  getOperationsInsights: (token) =>
+    request('GET', '/ai/operations-insights', null, token),
+
+  /**
+   * Generates notice or resolution writing texts based on instructions.
+   *
+   * @param {string} type        - 'NOTICE' or 'RESOLUTION'
+   * @param {string} instruction - Brief prompt/instructions
+   * @param {string} token       - JWT access token
+   * @returns {Promise<{data: object}>}
+   */
+  generateText: (type, instruction, token) =>
+    request('POST', '/ai/generate-text', { type, instruction }, token),
 };

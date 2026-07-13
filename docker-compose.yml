@@ -1,12 +1,9 @@
-# Society Maintenance Tracker — Docker Compose
-#
-# Purpose: Spins up a local PostgreSQL database for development.
-# The Express server is run directly via `npm run dev` for hot-reloading.
+# Society Maintenance Tracker — Complete Docker Compose Stack
 #
 # Usage:
-#   docker compose up -d        — Start the database
-#   docker compose down         — Stop the database
-#   docker compose down -v      — Stop and delete all data
+#   docker compose up -d        — Start the complete stack (DB, Server, Client)
+#   docker compose down         — Stop all services
+#   docker compose down -v      — Stop and purge database volumes
 
 version: "3.9"
 
@@ -25,9 +22,49 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-society_user}"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: society_server
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 6000
+      DATABASE_URL: postgresql://society_user:society_password@postgres:5432/society_maintenance
+      JWT_SECRET: ${JWT_SECRET:-default_jwt_secret_must_be_overridden_in_prod}
+      JWT_EXPIRES_IN: 7d
+      CLIENT_URL: http://localhost:3000
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      FROM_EMAIL: ${FROM_EMAIL:-noreply@yourdomain.com}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    ports:
+      - "6000:6000"
+    command: >
+      sh -c "npx prisma db push --accept-data-loss && npm run db:seed && node server.js"
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:6000/api
+    container_name: society_client
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
 
 volumes:
   postgres_data:

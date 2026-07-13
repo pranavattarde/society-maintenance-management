@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { dashboard as dashboardApi, complaints as complaintsApi, notices as noticesApi } from '../api/index';
+import { dashboard as dashboardApi, complaints as complaintsApi, notices as noticesApi, ai as aiApi } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, STATUS_LABELS, CATEGORY_LABELS } from '../utils/constants';
 import { StatusBadge, PriorityBadge } from '../components/StatusBadge';
@@ -12,12 +12,41 @@ import './Dashboard.css';
  */
 export default function Dashboard() {
   const { user, token } = useAuth();
+  const isAdmin = user?.role === ROLES.ADMIN;
 
   const [stats, setStats] = useState(null);
   const [activeComplaints, setActiveComplaints] = useState([]);
   const [latestNotices, setLatestNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // AI Operations Insights state
+  const [insights, setInsights]               = useState(null);
+  const [insightsLoading, setInsightsLoading]   = useState(false);
+  const [insightsError, setInsightsError]       = useState('');
+  const [lastGenerated, setLastGenerated]       = useState('');
+
+  async function fetchInsights() {
+    if (!token) return;
+    setInsightsLoading(true);
+    setInsightsError('');
+    try {
+      const response = await aiApi.getOperationsInsights(token);
+      setInsights(response.data?.insights || []);
+      setLastGenerated(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    } catch (err) {
+      setInsightsError(err.message || 'Failed to generate operational insights.');
+    } finally {
+      setInsightsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (isAdmin && token) {
+      fetchInsights();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, isAdmin]);
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -136,8 +165,6 @@ export default function Dashboard() {
     );
   }
 
-  const isAdmin = stats?.role === ROLES.ADMIN;
-
   return (
     <div className="page dashboard-workspace">
       
@@ -176,6 +203,61 @@ export default function Dashboard() {
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
           <span>There are <strong>{stats.overdueCount}</strong> overdue complaints requiring immediate attention.</span>
+        </div>
+      )}
+
+      {/* 🔮 AI Operations Insights Panel (Admin Only) */}
+      {isAdmin && (
+        <div className="workspace-panel ai-insights-panel">
+          <div className="panel-header ai-insights-header">
+            <div className="ai-insights-title">
+              <span className="ai-insights-sparkle">✨</span>
+              AI Operations Insights
+              {lastGenerated && (
+                <span className="ai-insights-timestamp">Last generated at {lastGenerated}</span>
+              )}
+            </div>
+            <button
+              onClick={fetchInsights}
+              className="btn btn-secondary btn-xs ai-insights-refresh-btn"
+              disabled={insightsLoading}
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={insightsLoading ? 'spin-animation' : ''} style={{ marginRight: '4px', verticalAlign: 'middle' }}>
+                <path d="M21.5 2v6h-6" />
+                <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+              </svg>
+              {insightsLoading ? 'Refreshing...' : 'Refresh'}
+            </button>
+          </div>
+
+          <div className="ai-insights-body">
+            {insightsLoading ? (
+              <div className="ai-insights-loading">
+                <div className="skeleton" style={{ width: '80%', height: '14px', marginBottom: '8px' }} />
+                <div className="skeleton" style={{ width: '90%', height: '14px', marginBottom: '8px' }} />
+                <div className="skeleton" style={{ width: '75%', height: '14px' }} />
+              </div>
+            ) : insightsError ? (
+              <div className="ai-insights-error">
+                <p>{insightsError}</p>
+                <button onClick={fetchInsights} className="btn btn-secondary btn-sm" style={{ marginTop: '8px' }}>
+                  Retry Generating
+                </button>
+              </div>
+            ) : insights && insights.length > 0 ? (
+              <ul className="ai-insights-list">
+                {insights.map((insight, idx) => (
+                  <li key={idx} className="ai-insight-item">
+                    <span className="ai-insight-dot">•</span>
+                    <span className="ai-insight-text">{insight}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted text-xs">Click Refresh to generate operational insights.</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -350,7 +432,7 @@ export default function Dashboard() {
             </div>
             <div className="category-list">
               {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
-                const count = stats?.byCategory[key] ?? 0;
+                const count = stats?.byCategory?.[key] ?? 0;
                 const total = stats?.totalComplaints ?? 1; // prevent division by zero
                 const percent = Math.min(100, Math.round((count / (total || 1)) * 100));
                 return (

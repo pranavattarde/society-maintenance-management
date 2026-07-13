@@ -37,19 +37,24 @@ function toCategoryMap(rows) {
 /**
  * Returns complaint statistics scoped to a single resident.
  *
- * Both queries run in parallel via Promise.all.
+ * All three queries run in parallel via Promise.all.
  *
  * @param {string} userId
- * @returns {{ role, totalComplaints, byStatus }}
+ * @returns {{ role, totalComplaints, byStatus, byCategory }}
  */
 async function getResidentStats(userId) {
   const where = { residentId: userId };
 
-  const [statusRows, total] = await Promise.all([
+  const [statusRows, categoryRows, total] = await Promise.all([
     prisma.complaint.groupBy({
       by: ['status'],
       where,
       _count: { status: true },
+    }),
+    prisma.complaint.groupBy({
+      by: ['category'],
+      where,
+      _count: { category: true },
     }),
     prisma.complaint.count({ where }),
   ]);
@@ -58,6 +63,7 @@ async function getResidentStats(userId) {
     role:            ROLES.RESIDENT,
     totalComplaints: total,
     byStatus:        toStatusMap(statusRows),
+    byCategory:      toCategoryMap(categoryRows),
   };
 }
 
