@@ -1,49 +1,91 @@
-# System Design Document
+# System Design Document — Society Maintenance Management
 
-This document explains the core system design, technology selections, scalability, and structural trade-offs chosen for the Grand Arch Residences system.
-
----
-
-## 1. System Architecture
-
-The application uses a decoupled, stateless **client-server architecture**.
-- **Frontend SPA:** Compiled static React bundle served via Nginx. Client-side routing is mapped entirely to `index.html` to allow direct URL path access.
-- **Backend API:** Stateless Express application. The service layer decouples route handling from database interactions and external API execution (Groq, Resend, Cloudinary).
+This document details the requirements, design decisions, technology selections, and architectural trade-offs made in the implementation of the Society Maintenance Management system.
 
 ---
 
-## 2. Technology Choices & Rationale
+## 1. Requirements
 
-### why PostgreSQL?
-- **Relational Integrity:** Maintenance tracking requires absolute consistency. A relational database allows foreign key constraints (e.g. mapping `ComplaintHistory` to `Complaint` and `User`) to ensure orphaned records or invalid references cannot exist.
-- **Transactional Support:** Changing ticket statuses requires atomic database transactions to guarantee logs are written cleanly.
+### Functional Requirements
+1. **Role-Based Workspaces:** Support distinct features for Residents (raise tickets, view bulletins, update profile) and Admins (triage incident queues, update ticket statuses, manage bulletins, edit user roles).
+2. **AI-Assisted Ticketing:** Process unstructured ticket descriptions to suggest structured titles, categories, and priority metrics.
+3. **Semantic Duplicate Check:** Warn residents of possible duplicate active complaints before they submit a ticket.
+4. **Chronological Audit History:** Automatically maintain an append-only log of all status transitions (`OPEN` → `IN_PROGRESS` → `RESOLVED`) along with assignee notes.
+5. **Bulletin Notice System:** Support publishing and pinning community announcements.
 
-### Why Prisma?
-- **Type Safety:** Prisma compiles a type-safe database client directly from the schema file, catching database field mapping bugs at compile-time instead of runtime.
-- **Declarative Migrations:** The schema defines the single source of truth, automating database synchronization via `prisma db push` or schema migrations.
-
-### Why Docker & Docker Compose?
-- **Unified Local Environment:** Compose launches the Postgres database engine, Express backend, and Nginx frontend in isolated networks, ensuring consistent runtimes.
-- **Deployment Portability:** Containerized builds build and execute identically on Render, AWS, or local developer workstations.
-
-### Why stateless JWT Sessions?
-- **Scalability:** The API server does not store session states in memory, allowing horizontal scaling behind load balancers.
-- **Security:** Tokens are signed using a secure `JWT_SECRET` and parsed on each protected request, preventing database session lookups.
-
-### Why the Groq AI Integration?
-- **Autofill Utility:** Large Language Models (LLMs) help residents structure clear titles, select categories, and determine priority levels based on text descriptions.
-- **Multi-Model Fallbacks:** High availability is guaranteed by querying models in a fallback sequence (`openai/gpt-oss-20b` → `meta-llama/llama-4-scout-17b-16e-instruct` → `llama-3.1-8b-instant`), resolving rate limits and downtime.
+### Non-Functional Requirements
+1. **Privacy-Safe Data Exposure:** Limit data shown on matching duplicates. Mask private resident fields (names, flat numbers) for tickets filed by other residents.
+2. **stateless Scalability:** Keep the application server stateless to simplify horizontal scaling.
+3. **Responsiveness:** Optimize layout reflows and minimize UI shift when the navigation sidebar collapses or viewports resize.
 
 ---
 
-## 3. High Scale Bottlenecks & Scalability
+## 2. Component Architecture
 
-### Pre-submission Duplicate Checking
-To prevent the database from bloating with duplicate entries, the front-end intercepts submit actions to query recent unresolved tickets (limited to the last 30 issues from the last 60 days). Groq processes the text similarity check, ensuring the search is fast (token usage ~2,500) and accurate.
+The platform is structured as a decoupled client-server architecture:
 
-For higher scale deployments:
-- **Optimization:** We can replace the LLM text similarity scan with local vector embeddings (`pgvector` extension) on the database, allowing instant index scans.
+```
+┌─────────────────────────────────┐
+│     Vite React SPA Client       │
+└────────────────┬────────────────┘
+                 │ HTTPS / REST (JWT in headers)
+                 ▼
+┌─────────────────────────────────┐
+│    Node Express API Gateway     │
+└────────┬───────┬────────┬───────┘
+         │       │        │
+         │       │        └──────────────┐
+         ▼ (Prisma)      ▼ (SDK)        ▼ (HTTP REST)
+┌────────────┐  ┌────────────┐  ┌────────────┐
+│ PostgreSQL │  │ Cloudinary │  │  Groq API  │
+└────────────┘  └────────────┘  └────────────┘
+```
 
-### Database Indexing
-To prevent database bottlenecks during heavy loads:
-- **Composite Indexing:** We add composite indexes on `Complaint(status, createdAt)` and `Notice(isPinned, createdAt)` to optimize dashboard lists and bulletin board queries.
+- **React SPA:** Handles all rendering and routing in client-side memory.
+- **Express API Gateway:** Intercepts incoming requests, applies schema validators and auth guards, and coordinates services.
+- **PostgreSQL Database:** Stores relational tables under constraints enforced via Prisma.
+- **Cloudinary Storage:** Persists resident avatars and ticket attachments directly via stream uploads.
+- **Groq API:** Orchestrates on-demand text completion prompts and semantic similarity checks.
+
+---
+
+## 3. Design Decisions & Rationale
+
+### Why PostgreSQL?
+- **Data Integrity:** Ticket logging requires strict relational consistency. Using foreign keys ensures that history logs (`ComplaintHistory`) cannot point to non-existent tickets or deleted users.
+- **Transactional History:** Changing a complaint status requires writing to the ticket table and appending to the history logs simultaneously. PostgreSQL allows executing these operations in atomic transactions, preventing split-state scenarios.
+
+### Why Prisma ORM?
+- **Typesafe Client:** Prisma generates type definitions matching the schema exactly, catching database field mismatches at compile time rather than runtime.
+- **Declarative Database Sync:** Prisma schema acts as the single source of truth. Synchronizing tables via `npx prisma db push` guarantees that local developer databases match production Neon environments.
+
+### Why Stateless JWT Authentication?
+- **Horizontal Scalability:** Storing sessions in stateless tokens instead of server memory allows incoming requests to hit different backend instances without session replication synchronization.
+- **Security:** Each token is signed using `JWT_SECRET` and carries short expiration limits, eliminating the database lookup latency needed for session validation.
+
+### Why Cloudinary Stream Uploads?
+- **Stateless Storage:** Because deployed Render instances are stateless and ephemeral, storing uploaded photos on local disk is not viable. Cloudinary stores media assets permanently, returning a secure URL persisted in the database.
+
+---
+
+## 4. AI Service Integration & Fallback Strategy
+
+The application integrates with the Groq API to perform text classifications. 
+
+### Multi-Model Fallback Queue
+To handle rate limits or API downtime, requests pass through a sequential fallback pipeline:
+1. `openai/gpt-oss-20b` (Primary fallback)
+2. `meta-llama/llama-4-scout-17b-16e-instruct` (Secondary fallback)
+3. `llama-3.1-8b-instant` (Tertiary fallback)
+
+This queue ensures the application degrades gracefully and continues functioning if a specific model endpoint fails.
+
+---
+
+## 5. Architectural Trade-offs
+
+### Non-Blocking Semantic Duplicate Detection
+- **Trade-off:** Rather than performing duplicate checks client-side using simple string matching (which misses synonyms like "lift down" vs "elevator broken"), we run a prompt on Groq comparing description semantics. While this introduces API latency (~1.5s), we execute it as a non-blocking check during initial form submission. This gives residents immediate warning of duplicate tickets while retaining the option to click "Continue Anyway".
+
+### Short Token Expirations vs Session Revocation
+- **Trade-off:** Using stateless JWTs prevents instant session revocation (e.g., if a user is demoted or suspended mid-session, they remain logged in until the token expires). We compromise by setting token expirations to a moderate duration (`7d`) to balance session length with access security.

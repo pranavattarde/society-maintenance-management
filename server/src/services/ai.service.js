@@ -425,7 +425,7 @@ async function generateOperationsInsights() {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new ApiError(503, 'AI service is not configured.');
 
-  const [activeList, total, open, progress, resolved] = await Promise.all([
+  const [activeList, statusCounts] = await Promise.all([
     prisma.complaint.findMany({
       where: { status: { in: ['OPEN', 'IN_PROGRESS'] } },
       orderBy: { createdAt: 'desc' },
@@ -439,11 +439,21 @@ async function generateOperationsInsights() {
         resident: { select: { flatNumber: true } },
       },
     }),
-    prisma.complaint.count(),
-    prisma.complaint.count({ where: { status: 'OPEN' } }),
-    prisma.complaint.count({ where: { status: 'IN_PROGRESS' } }),
-    prisma.complaint.count({ where: { status: 'RESOLVED' } }),
+    prisma.complaint.groupBy({
+      by: ['status'],
+      _count: { id: true },
+    }),
   ]);
+
+  const countMap = { OPEN: 0, IN_PROGRESS: 0, RESOLVED: 0 };
+  for (const item of statusCounts) {
+    countMap[item.status] = item._count.id;
+  }
+
+  const open = countMap.OPEN;
+  const progress = countMap.IN_PROGRESS;
+  const resolved = countMap.RESOLVED;
+  const total = open + progress + resolved;
 
   if (total === 0 || activeList.length < 2) {
     return {
@@ -543,4 +553,5 @@ module.exports = {
   parseSearchIntent,
   generateOperationsInsights,
   generateText,
+  parseAndValidate, // Exported for unit testing
 };

@@ -1,61 +1,59 @@
-# System Architecture & Design Document
+# System Architecture — Society Maintenance Management
 
-This document outlines the software architecture, design patterns, and interface boundaries for the Grand Arch Residences system.
+This document details the software architecture, modular layering, and structural interfaces of the Society Maintenance Management application.
 
 ---
 
 ## 1. High-Level Component Layout
 
-The platform uses a decoupled client-server architecture. All operations are stateless, using a relational database layer and third-party media and messaging integrations.
+The system follows a stateless client-server architecture model. 
 
 ```
-                  ┌────────────────────────┐
-                  │   Vite React SPA (UI)  │
-                  └───────────┬────────────┘
-                              │ HTTPS (JWT Auth)
-                              ▼
-                  ┌────────────────────────┐
-                  │    Express REST API    │
-                  └────┬──────┬──────┬─────┘
-                       │      │      │
-        ┌──────────────┘      │      └──────────────┐
-        ▼ (Prisma ORM)        ▼ (SDK/Fetch)         ▼ (HTTP API)
- ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
- │  PostgreSQL  │     │  Cloudinary  │     │   Groq AI    │
- └──────────────┘     └──────────────┘     └──────────────┘
+┌─────────────────────────────────┐
+│       Vite React SPA (UI)       │
+└────────────────┬────────────────┘
+                 │ HTTPS (Bearer JWT Token)
+                 ▼
+┌─────────────────────────────────┐
+│     Node.js Express API Server  │
+└──────┬────────┬────────┬────────┘
+       │        │        │
+       │        │        └──────────────┐
+       ▼ (ORM)  ▼ (SDK)                 ▼ (HTTP)
+┌──────────┐ ┌──────────┐          ┌──────────┐
+│PostgreSQL│ │Cloudinary│          │ Groq AI  │
+└──────────┘ └──────────┘          └──────────┘
 ```
 
 ### Component Details
-- **Client Workspace (Vite + React SPA):** Served by Nginx in a container or static edge networks (Vercel). Handles all visual renders, AI debounce triggers, and pre-submission checks.
-- **Server API (Node.js + Express):** Stateless runtime exposing RESTful endpoints. Implements JWT filters, body validators, and acts as the gatekeeper for DB access.
-- **Database (PostgreSQL):** Relational store containing tables for users, complaints, audit history logs, and notices. Managed via Prisma.
-- **AI Integrations (Groq API):** Evaluates description content on the fly. Returns structural JSON output or lists duplicate warnings using fallback models.
-- **Media Uploads (Cloudinary):** Files uploaded as multipart/form-data are streamed to Cloudinary, storing only the secure link in the DB.
+- **Client Workspace (Vite + React SPA):** Served by Nginx inside a container or hosted on edge networks (Vercel). Manages routing in client memory and triggers on-demand AI analysis or duplicate checks during submissions.
+- **Server API (Node.js + Express):** Stateless endpoint gateway. Authenticates sessions via JWT, validates incoming bodies, and handles queries to database services.
+- **Database Layer (PostgreSQL):** Stores application tables. Schema structural integrity is maintained via foreign keys.
+- **AI Service (Groq API):** Processes classification and duplicate search requests using Llama models.
+- **Media Assets (Cloudinary):** Stores binary files (avatars, ticket images) to preserve stateless server operation.
 
 ---
 
 ## 2. Server Architectural Layers
 
-The backend follows a strict **Controller-Service-Repository** pattern:
+The backend codebase follows a Controller-Service-Repository structural pattern:
 
-1. **Routing Layer (`server/src/routes`):** Declares endpoints, maps route patterns, and binds JWT middlewares and body validation constraints.
-2. **Validation Middleware (`server/src/middleware/validate`):** Uses validator scripts to intercept requests. Rejects invalid forms (400 Bad Request) before hitting controllers.
-3. **Controller Layer (`server/src/controllers`):** Extracts payloads, manages HTTP request/response loops, and delegates actions to services.
-4. **Service Layer (`server/src/services`):** Contains the business logic. Manages external integration configurations (Groq, Resend) and model fallback logic.
-5. **Database ORM (`server/src/config/db`):** Interacts with PostgreSQL using Prisma Client queries.
+```
+Request ──► Routing ──► JWT / Validate ──► Controller ──► Service ──► Prisma (DB)
+```
+
+1. **Routing Layer (`server/src/routes`):** Exposes API paths, binds JWT auth guards, and assigns validation middleware.
+2. **Validation Middleware (`server/src/middleware`):** Validates incoming payload shapes, returning a `400 Bad Request` instantly if validations fail, avoiding database hits.
+3. **Controller Layer (`server/src/controllers`):** Processes incoming requests, extracts headers and query properties, and coordinates response envelopes.
+4. **Service Layer (`server/src/services`):** Implements business logic (coordinate transactions, configure Groq model fallback loops, construct email parameters).
+5. **Database Configuration (`server/src/config`):** Instantiates the Prisma Client pool to connect with PostgreSQL.
 
 ---
 
-## 3. Design Decisions & Trade-offs
+## 3. Key Design Patterns
 
-### Stateless Authentication (JWT)
-- **Decision:** JWT token stored in memory on the client, passed via `Authorization: Bearer <token>` headers.
-- **Trade-off:** Fast, stateless, and horizontally scalable. However, instant token revocation requires blacklisting (not implemented, solved by setting short token expirations).
+### Stateless Sessions
+The Express API stores no session state. Instead, authentication utilizes cryptographic JSON Web Tokens (JWT) signed by a server-side secret key. The React client passes this token inside the `Authorization: Bearer <token>` header of REST requests. This allows the backend API to scale horizontally behind a load balancer without session data synchronization overhead.
 
-### Decoupled client-side AI analysis
-- **Decision:** Description typing triggers an AI check only after a 1.5s debounce delay and a 30-character threshold.
-- **Trade-off:** Reduces API rate limiting costs on Groq while maintaining a responsive autocomplete UI.
-
-### pre-submission duplicate warning
-- **Decision:** Submissions trigger a database query for recent unresolved issues and uses Groq to perform semantic similarity matches.
-- **Trade-off:** A pure database search might miss synonyms (e.g. "elevator broken" vs "lift malfunctioning"). Using Groq matches semantics but adds minor overhead (~1.5s latency). The check is non-blocking to prevent UI friction.
+### Third-Party File Stream Pipeline
+To maintain ephemeral container operations, the Express backend does not save files to disk. Instead, files uploaded as multipart forms are piped directly as a memory stream buffer to Cloudinary using the Cloudinary SDK, returning a hosted URL that is written to PostgreSQL.

@@ -66,12 +66,19 @@ model Complaint {
   status      Status   @default(OPEN)
   photoUrl    String?
   residentId  String
+  isOverdue   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   resident User              @relation("ResidentComplaints", fields: [residentId], references: [id])
   history  ComplaintHistory[]
 
+  @@index([residentId])
+  @@index([status])
+  @@index([category])
+  @@index([priority])
+  @@index([isOverdue])
+  @@index([createdAt])
   @@map("complaints")
 }
 
@@ -86,9 +93,12 @@ model ComplaintHistory {
   remark      String?
   createdAt   DateTime @default(now())
 
-  complaint Complaint @relation(fields: [complaintId], references: [id])
+  complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   changedBy User      @relation(fields: [changedById], references: [id])
 
+  @@index([complaintId])
+  @@index([changedById])
+  @@index([createdAt])
   @@map("complaint_history")
 }
 
@@ -103,5 +113,8 @@ model Notice {
 
   author User @relation(fields: [authorId], references: [id])
 
+  @@index([authorId])
+  @@index([isPinned])
+  @@index([createdAt])
   @@map("notices")
 }

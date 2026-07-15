@@ -1,107 +1,148 @@
-# Grand Arch Residences — Society Maintenance Management System
+# Society Maintenance Management
 
-A production-grade, containerized, full-stack operational workspace designed for modern residential societies. It enables residents to report maintenance issues, seek smart AI-assisted suggestions, identify duplicate claims pre-submission, and allows administrators to organize, assign, track, and audit maintenance activities through a robust, responsive dashboard.
+A full-stack application designed to coordinate maintenance requests and community notices inside a residential building complex. Residents can file issues, upload images, and check for similar issues pre-submission. Administrators can track, categorize, and transition issue tickets through a dashboard with a chronological log of changes.
+
+## Deployed Applications
+
+- **Frontend Application:** [https://society-maintenance-management.vercel.app](https://society-maintenance-management.vercel.app)
+- **Backend API Service:** [https://society-maintenance-backend-i9g2.onrender.com](https://society-maintenance-backend-i9g2.onrender.com)
 
 ---
 
 ## 1. Project Overview & Problem Statement
 
 ### Problem Statement
-Managing maintenance operations in a residential society using manual lists, group chats, or legacy spreadsheets leads to several systemic inefficiencies:
-1. **Lack of Structure:** Incoming issues are poorly categorized and prioritized.
-2. **Submissions Bloat:** Residents file duplicate requests for shared problems (e.g. lift outages, corridor lighting).
-3. **No Audit Trail:** Accountability is lost when work changes hands.
-4. **Poor Communication:** Residents remain in the dark about resolution timelines, while admins lack analytical insights.
+Managing building maintenance via paper forms, group chats, or unindexed spreadsheets introduces operational overhead:
+1. **No Structured Tracking:** Tickets lack categories, priority tags, and dedicated assignees.
+2. **Duplicate Submissions:** Multiple residents file separate tickets for shared infrastructure issues (e.g., lift failures, corridor lighting).
+3. **Lack of Transparency:** Residents cannot monitor ticket progress, and admins lack operational logs.
 
 ### Solution
-Grand Arch Residences solves these challenges by providing:
-- A structured, role-based reporting workflow with progressive validation.
-- An **AI Assistant** to write clear titles, auto-categorize issues, and assess urgency.
-- A **Smart Duplicate Detector** to flags similar issues pre-submission.
-- A **70/30 Audit Trail Log** showing historical state transitions and remarks.
-- A **Bulletin Board** for pinned community alerts and announcements.
+This application addresses these issues through:
+- A role-based authentication flow separating residents from facility admins.
+- A central board with searchable, filterable complaint tickets.
+- An **AI Assistant** using Llama-3.1 on Groq to suggest titles, categories, and priority levels.
+- A **Semantic Duplicate Detector** that flags unresolved identical issues pre-submission.
+- An append-only **Audit History Log** tracking status updates (`OPEN` → `IN_PROGRESS` → `RESOLVED`) and remarks.
+- A **Bulletin Board** for pinned announcements.
 
 ---
 
 ## 2. Technology Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Frontend** | React 19, React Router 7, Vite 6 | High-density UI component architecture and routing |
-| **Backend** | Node.js 20, Express 4 | Stateless REST API service layer |
-| **Database** | PostgreSQL 16 (Neon in production) | Persistent relational store |
-| **ORM** | Prisma 6 | Typesafe query compilation and schema management |
-| **Authentication**| JWT + bcrypt | Secure stateless session guarding |
-| **AI Integration**| Groq Chat Completions (3-Model Fallback) | Context-aware analysis and similarity checks |
-| **File Storage** | Cloudinary | Persistent image storage for proof uploads |
-| **Email Service** | Resend | Automatic community notifications |
-| **Orchestration** | Docker + Docker Compose | Containerized database and service networking |
+- **Frontend:** React 19, React Router 7, Vite 6, Vanilla CSS.
+- **Backend:** Node.js 20, Express 4.
+- **Database:** PostgreSQL 16 (hosted on Neon in production).
+- **ORM:** Prisma 6.
+- **Authentication:** JSON Web Tokens (JWT) and bcrypt password hashing.
+- **File Storage:** Cloudinary (for resident profile pictures and ticket attachments).
+- **Email Service:** Resend (notifies residents when ticket status changes).
+- **AI Service:** Groq API (on-demand text analysis and semantic similarity checking).
+- **Containerization:** Docker & Docker Compose.
 
 ---
 
-## 3. Key Features
-
-### Core Operations
-- **Role-Based Auth (JWT):** Differentiates between Resident and Administrator views.
-- **Reported Issues Board:** High-density, scannable issue queue with custom filters (Status, Category, Date).
-- **Interactive Bulletin Board:** Announcement board supporting pin/unpin toggles and inline rich-text editing.
-- **Audit Logs:** Log transitions (`OPEN` → `IN_PROGRESS` → `RESOLVED`) with accountability parameters.
-
-### AI Assistant (Phase 15 & 17)
-- **Automatic Analysis:** Triggers on user description (min 30 chars).
-- **Confidence Visualization:** Shimmering block indicators (`█████████░`) ranking confidence (High/Medium/Low).
-- **Explainability:** Renders detailed "Why this suggestion?" justifications.
-- **Pre-submission Review Card:** Displays checklist checkmarks verifying details before submission.
-
-### Smart Duplicate Detection (Phase 16)
-- **Pre-submission Scopes:** Compares title + description against the last 30 unresolved issues from the last 60 days.
-- **Non-Blocking Interface:** Warns user with similarity metrics, letting them view the existing thread or click "Continue Anyway".
-
----
-
-## 4. Repository Folder Structure
+## 3. Project Folder Structure
 
 ```
 society-maintenance-management/
-├── client/                     # Frontend SPA workspace (React + Vite)
+├── client/                     # React Frontend Single Page Application
 │   ├── src/
-│   │   ├── api/                # API client functions using native fetch
-│   │   ├── components/         # AI Panel, Duplicate Detector, Navbar, Badges
-│   │   ├── context/            # AuthContext session provider
-│   │   ├── pages/              # Dashboard, Issues Board, Bulletin Board, Auth
-│   │   ├── styles/             # CSS variable design system & global overrides
-│   │   └── utils/              # Client constants and helpers
-│   ├── Dockerfile              # Multi-stage production Nginx runner
-│   ├── nginx.conf              # SPA route rewriting config
-│   └── vercel.json             # Vercel routing configuration
-├── server/                     # Backend API workspace (Express + Prisma)
-│   ├── prisma/                 # Database schema and seed scripts
+│   │   ├── api/                # REST API request handlers using native fetch
+│   │   ├── components/         # Reusable layouts, modals, and badges
+│   │   ├── context/            # AuthContext managing local session state
+│   │   ├── pages/              # Dashboards, boards, notice creation, settings
+│   │   ├── styles/             # CSS variable design system
+│   │   └── utils/              # Helper utilities and enum mappings
+│   ├── Dockerfile              # Container runner utilizing Nginx static server
+│   ├── nginx.conf              # SPA URL routing rewrite directives
+│   └── vercel.json             # Deployment routing rules for Vercel
+├── server/                     # Express REST API Backend Workspace
+│   ├── prisma/                 # Database schema definitions and seed data
+│   │   ├── schema.prisma       # Database design
+│   │   └── seed.js             # Seeding script containing realistic mock tickets
 │   ├── src/
-│   │   ├── config/             # DB client and Cloudinary connection helpers
-│   │   ├── controllers/        # REST controllers (Auth, AI, Issues, Notices)
-│   │   ├── middleware/         # Auth filters, validation schema, error handler
+│   │   ├── config/             # Cloudinary, Prisma, and database bootstrap config
+│   │   ├── controllers/        # Express request controllers
+│   │   ├── middleware/         # Auth verification and input validation middlewares
 │   │   ├── routes/             # REST route registers
-│   │   ├── services/           # Service layer (Groq fallbacks, Resend)
-│   │   ├── validations/        # Express validator schemas
-│   │   └── utils/              # API response structures and constants
-│   ├── Dockerfile              # Two-stage production API builder
-│   └── server.js               # Database connection bootstrap
-├── docs/                       # High-level system documentation
-├── docker-compose.yml          # Container stack orchestrator
-├── .env.example                # Documented configuration template
-└── SYSTEM_DESIGN.md            # System design and architecture document
+│   │   ├── services/           # Service integrations (Groq fallback, Resend, Cloudinary)
+│   │   ├── validations/        # Request parameter validator schemas
+│   │   └── utils/              # Constants and API response helpers
+│   ├── Dockerfile              # Multi-stage production Node.js builder
+│   └── server.js               # Express application entry point
+├── docs/                       # High-level architecture and guide references
+├── docker-compose.yml          # Container configuration for local stack orchestration
+└── SYSTEM_DESIGN.md            # System architecture design decisions
 ```
 
 ---
 
-## 5. Database Schema Overview
+## 4. Key Features
+
+### Resident Features
+- **File Complaint:** Submit complaints with title, description, category, priority, and an optional photo attachment.
+- **Interactive AI Helper:** Click **✨ Analyze with AI** to suggest structured titles, categories, and priority values from the description.
+- **My Profile Settings:** Update name, contact phone number, flat unit assignment, and upload a profile picture.
+- **Issue Tracking:** Monitor progress via a chronological history log on the ticket detail view.
+- **View Bulletins:** Browse announcements published by the management team.
+
+### Admin Features
+- **Operations Dashboard:** Track metrics (Total open, unresolved, resolved, and SLA overdue tickets).
+- **Triage Incident Queue:** Review list of all complaints across the society, filterable by category, urgency, status, and reporter date.
+- **Notice Management:** Publish, edit, delete, and pin announcements on the community bulletin board.
+- **User Directory Console:** Promote residents to administrators or demote administrator roles (self-demotion is restricted).
+- **Update Ticket Status:** Transition tickets and append notes/remarks to the history audit trail.
+
+### AI Features
+- **On-Demand Suggestions:** Processes issue descriptions using the Groq API to auto-fill parameters.
+- **Confidence Scores:** Renders visual confidence rankings (High, Medium, Low) for the suggestions.
+- **Semantic Similarity Detection:** Runs once during ticket creation to check the title and description against the last 30 unresolved issues from the last 60 days. Flags similar tickets without blocking submission, using Llama-3.1 on Groq.
+- **Duplicate Summaries:** Offers a privacy-preserving modal detail sheet for matched duplicate tickets, showing category, priority, status, and AI descriptions without exposing the reporter's flat number or identity.
+
+---
+
+## 5. API Endpoint Summary
+
+All protected endpoints require passing a valid JWT token in the `Authorization: Bearer <token>` header.
+
+### Authentication
+- `POST /api/auth/register` — Register a new account (forced to the `RESIDENT` role).
+- `POST /api/auth/login` — Log in and receive a stateless JWT token.
+- `GET /api/auth/me` — Retrieve the currently logged-in user profile.
+
+### Users & Directory (Settings)
+- `GET /api/users` — List all registered users (Admin only).
+- `PATCH /api/users/:id/role` — Update a user's role (Admin only).
+- `PATCH /api/users/profile` — Update the logged-in user's profile information and avatar.
+
+### Complaint Tickets
+- `GET /api/complaints` — Retrieve complaints list based on filter queries.
+- `POST /api/complaints` — Submit a ticket (multipart/form-data with photo upload).
+- `GET /api/complaints/:id` — Retrieve details and chronological history log of a ticket.
+- `PATCH /api/complaints/:id/status` — Transition ticket status and append remarks (Admin only).
+
+### Bulletin Notices
+- `GET /api/notices` — Retrieve all notice bulletins (pinned notices appear first).
+- `POST /api/notices` — Publish a new bulletin notice (Admin only).
+- `PATCH /api/notices/:id` — Edit an existing bulletin notice (Admin only).
+- `DELETE /api/notices/:id` — Delete a notice (Admin only).
+- `PATCH /api/notices/:id/pin` — Toggle the pinned status of a notice (Admin only).
+
+### AI Integration
+- `POST /api/ai/analyze-complaint` — Process description text and return suggestions.
+- `POST /api/ai/detect-duplicates` — Semantically compare description text against recent open tickets.
+
+---
+
+## 6. Database Overview
 
 ```mermaid
 erDiagram
     User ||--o{ Complaint : "raises"
     User ||--o{ ComplaintHistory : "updates"
     User ||--o{ Notice : "creates"
-    Complaint ||--o{ ComplaintHistory : "has"
+    Complaint ||--o{ ComplaintHistory : "contains"
 
     User {
         string id PK
@@ -111,6 +152,7 @@ erDiagram
         enum role
         string flatNumber
         string phone
+        string avatarUrl
         datetime createdAt
     }
 
@@ -148,102 +190,97 @@ erDiagram
 
 ---
 
-## 6. API Endpoint Overview
+## 7. Environment Variables
 
-### Authentication
-- `POST /api/auth/register` — Creates user account (Resident / Admin)
-- `POST /api/auth/login` — Returns JWT and user profile
-- `GET /api/auth/me` — Fetches current user profile (JWT protected)
+Create a `.env` file in both `client` and `server` folders using the templates below.
 
-### Reported Issues
-- `GET /api/complaints` — Lists filtered issues
-- `POST /api/complaints` — Submits a new issue (Multipart form with photo upload)
-- `GET /api/complaints/:id` — Fetches detail view, audit timeline history
-- `PATCH /api/complaints/:id/status` — Updates status (Admin only)
+### Backend Configurations (`server/.env`)
+```env
+PORT=6000
+DATABASE_URL="postgresql://user:password@localhost:5432/society_maintenance"
+JWT_SECRET="generate-a-secure-random-key"
+JWT_EXPIRES_IN=7d
+CLIENT_URL="http://localhost:3000"
 
-### Bulletin Board
-- `GET /api/notices` — Lists announcements (Pinned first)
-- `POST /api/notices` — Creates notice (Admin only)
-- `PATCH /api/notices/:id` — Modifies notice content (Admin only)
-- `DELETE /api/notices/:id` — Deletes notice (Admin only)
-- `PATCH /api/notices/:id/pin` — Toggles pinned status (Admin only)
+# Third-party Integrations
+CLOUDINARY_CLOUD_NAME="your-cloudinary-name"
+CLOUDINARY_API_KEY="your-cloudinary-key"
+CLOUDINARY_API_SECRET="your-cloudinary-secret"
 
-### AI Service
-- `POST /api/ai/analyze-complaint` — Analyzes issue text using Groq
-- `POST /api/ai/detect-duplicates` — Checks description against recent open issues
+RESEND_API_KEY="re_your_resend_api_key"
+FROM_EMAIL="noreply@yourdomain.com"
+
+GROQ_API_KEY="gsk_your_groq_api_key"
+```
+
+### Frontend Configurations (`client/.env`)
+```env
+VITE_API_URL="http://localhost:6000/api"
+```
 
 ---
 
-## 7. Local Docker Setup & Environment Configuration
+## 8. Quick Start & Local Setup
 
-### Prerequisite Environment setup
-1. Copy the environment template:
+### Running with Docker Compose
+To build and run the entire stack (PostgreSQL, Express backend, React client):
+1. Configure your `.env` file in the root directory.
+2. Run the orchestrator:
    ```bash
-   cp .env.example .env
+   docker compose up --build
    ```
-2. Open `.env` and fill out keys for **Cloudinary**, **Resend**, and **Groq AI**.
+3. The React application will be served at `http://localhost:3000`. The server runs at `http://localhost:6000`.
 
-### Orchestrate Complete Stack
-Ensure Docker is active, then launch the complete stack from the root directory:
-```bash
-docker compose up --build
-```
-This builds:
-- A PostgreSQL 16 container mapping port `5432`.
-- The Node Express API running at `http://localhost:5000` (auto-executes db push + seeds).
-- The React App running at `http://localhost:3000`.
+### Running Locally (Without Docker)
+
+#### Prerequisites
+- Node.js (v18 or higher)
+- A running PostgreSQL instance
+
+#### Setup Database and Server
+1. Navigate to the server folder and install dependencies:
+   ```bash
+   cd server
+   npm install
+   ```
+2. Run migrations to setup tables:
+   ```bash
+   npx prisma db push
+   ```
+3. Populate database with seed users and incident history logs:
+   ```bash
+   npm run db:seed
+   ```
+4. Start the backend developer API server:
+   ```bash
+   npm run dev
+   ```
+
+#### Setup Client Application
+1. Open a new terminal window, navigate to the client folder, and install dependencies:
+   ```bash
+   cd client
+   npm install
+   ```
+2. Start the Vite hot-reloading development server:
+   ```bash
+   npm run dev
+   ```
+3. Open `http://localhost:5173` in your browser.
 
 ---
 
-## 8. Development Setup (Without Docker Compose)
-
-### 1. Start Postgres Database
-Launch the database container:
-```bash
-docker compose up postgres -d
-```
-
-### 2. Configure & Seed Server
-```bash
-cd server
-npm install
-npx prisma generate
-npx prisma db push
-npm run db:seed
-npm run dev
-```
-
-### 3. Launch Frontend Client
-```bash
-cd client
-npm install
-npm run dev
-```
-Open `http://localhost:5173`.
-
----
-
-## 9. Demo Credentials
+## 9. Demo Logins
 
 | Profile | Email | Password | Flat/Unit |
 |---|---|---|---|
 | **Admin (Operations)** | `admin@society.com` | `admin@123` | OFFICE-01 |
-| **Admin (Committee President)** | `admin2@society.com` | `admin@123` | OFFICE-02 |
+| **Admin (Committee)** | `admin2@society.com` | `admin@123` | OFFICE-02 |
 | **Resident (Primary)** | `resident@society.com` | `resident@123` | A-101 |
-| **Resident (Additional)** | `aravind@society.com` | `resident@123` | B-304 |
+| **Resident (Additional)**| `aravind@society.com` | `resident@123` | B-304 |
 
 ---
 
-## 10. Future Architectural Scaling
+## 10. License
 
-1. **Redis Caching:** Introduce caching for Bulletin Board notices.
-2. **WebSocket Integrations:** Shift notice and critical status updates to real-time socket connections.
-3. **Optimized DB Indexes:** Add composite indexes on `Complaint(status, createdAt)` for high-scale queues.
-4. **Vektor Database Embeddings:** Transition AI Duplicate check from chat prompts to local pgvector embedding searches.
-
----
-
-## 11. License & Acknowledgements
-
-- Licensed under [MIT](LICENSE).
-- Powered by Groq AI and Prisma ORM.
+Licensed under the [MIT License](LICENSE).

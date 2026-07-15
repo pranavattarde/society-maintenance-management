@@ -28,7 +28,7 @@ export default function Navbar({ collapsed, onToggle }) {
           <path d="M9 6h6" />
           <path d="M9 10h6" />
         </svg>
-        <span className="nav-brand-text">Grand Arch Residences</span>
+        <span className="nav-brand-text">Society Maintenance</span>
         <button
           onClick={onToggle}
           className="nav-collapse-btn"

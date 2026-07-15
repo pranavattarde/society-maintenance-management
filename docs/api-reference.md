@@ -1,6 +1,6 @@
-# REST API Reference
+# REST API Reference — Society Maintenance Management
 
-The backend REST API is hosted at `/api`. All endpoints except auth routes require a valid JWT token passed in the `Authorization: Bearer <token>` header.
+All endpoints are prefix-registered under `/api`. Protected routes require a valid JSON Web Token passed inside the `Authorization: Bearer <token>` header.
 
 ---
 
@@ -8,13 +8,13 @@ The backend REST API is hosted at `/api`. All endpoints except auth routes requi
 
 ### Register User
 `POST /api/auth/register`
-- **Body:**
+Creates a user account, defaulting their role to `RESIDENT`. Admins cannot be registered.
+- **Body Payload:**
   ```json
   {
     "name": "Priya Sharma",
     "email": "priya@society.com",
     "password": "securepassword123",
-    "role": "RESIDENT",
     "flatNumber": "A-101",
     "phone": "9876543210"
   }
@@ -36,7 +36,7 @@ The backend REST API is hosted at `/api`. All endpoints except auth routes requi
 
 ### Log In
 `POST /api/auth/login`
-- **Body:**
+- **Body Payload:**
   ```json
   {
     "email": "priya@society.com",
@@ -53,28 +53,118 @@ The backend REST API is hosted at `/api`. All endpoints except auth routes requi
       "name": "Priya Sharma",
       "email": "priya@society.com",
       "role": "RESIDENT",
-      "flatNumber": "A-101"
+      "flatNumber": "A-101",
+      "avatarUrl": "https://res.cloudinary.com/..."
+    }
+  }
+  ```
+
+### Current User Profile
+`GET /api/auth/me`
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "user": {
+      "id": "cuid12345",
+      "name": "Priya Sharma",
+      "email": "priya@society.com",
+      "role": "RESIDENT",
+      "flatNumber": "A-101",
+      "phone": "9876543210",
+      "avatarUrl": "https://res.cloudinary.com/..."
     }
   }
   ```
 
 ---
 
-## 2. Reported Issues Endpoints
+## 2. Directory & Profile Endpoints
 
-### List Issues
+### List Users
+`GET /api/users` (Admin Only)
+Retrieve list of registered users.
+- **Query Parameters (Optional):** `search` (searches name, email, or flat number)
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "users": [
+      {
+        "id": "cuid123",
+        "name": "Aravind Nair",
+        "email": "aravind@society.com",
+        "role": "RESIDENT",
+        "flatNumber": "B-304",
+        "phone": "9998887770",
+        "createdAt": "2026-07-12T12:00:00Z"
+      }
+    ]
+  }
+  ```
+
+### Promote/Demote User Role
+`PATCH /api/users/:id/role` (Admin Only)
+- **Body Payload:**
+  ```json
+  {
+    "role": "ADMIN" // or "RESIDENT"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "user": {
+      "id": "cuid123",
+      "name": "Aravind Nair",
+      "role": "ADMIN"
+    }
+  }
+  ```
+- **Error (400 Bad Request):** If admin tries to demote themselves.
+
+### Update Profile
+`PATCH /api/users/profile`
+Updates profile details and optionally uploads a profile avatar.
+- **Headers:** `Content-Type: multipart/form-data`
+- **Multipart Fields:**
+  - `name`: String (min 2 chars, optional)
+  - `phone`: String (optional)
+  - `flatNumber`: String (optional)
+  - `avatar`: File (optional image, max 2MB)
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "user": {
+      "id": "cuid123",
+      "name": "Aravind Nair",
+      "phone": "9998887770",
+      "flatNumber": "B-304",
+      "avatarUrl": "https://res.cloudinary.com/..."
+    }
+  }
+  ```
+
+---
+
+## 3. Complaint Tickets Endpoints
+
+### List Complaints
 `GET /api/complaints`
-- **Query Parameters:** `status` (Enum), `category` (Enum), `date` (YYYY-MM-DD)
+Retrieve complaints list.
+- **Query Parameters (Optional):** `status` (OPEN, IN_PROGRESS, RESOLVED), `category` (PLUMBING, etc.), `priority` (LOW, MEDIUM, HIGH), `search` (text), `date` (YYYY-MM-DD)
 - **Response (200 OK):**
   ```json
   {
     "success": true,
     "complaints": [
       {
-        "id": "clt123456",
-        "title": "Water dripping from bathroom ceiling",
+        "id": "clt12345",
+        "title": "Water leakage in flat",
         "category": "PLUMBING",
-        "priority": "MEDIUM",
+        "priority": "HIGH",
         "status": "OPEN",
         "createdAt": "2026-07-12T12:00:00Z"
       }
@@ -82,38 +172,110 @@ The backend REST API is hosted at `/api`. All endpoints except auth routes requi
   }
   ```
 
-### Submit Issue
+### Submit Complaint
 `POST /api/complaints`
 - **Headers:** `Content-Type: multipart/form-data`
 - **Multipart Fields:**
   - `title`: String (min 3 chars)
   - `description`: String (min 10 chars)
-  - `category`: Enum (e.g. `PLUMBING`)
-  - `priority`: Enum (e.g. `MEDIUM`)
-  - `photo`: File (optional, max 5MB image)
+  - `category`: Category Enum
+  - `priority`: Priority Enum
+  - `photo`: File (optional attachment, max 5MB)
 - **Response (201 Created):**
   ```json
   {
     "success": true,
     "complaint": {
-      "id": "clt987654",
-      "title": "Water dripping...",
+      "id": "clt98765",
+      "title": "Water leakage in flat",
       "photoUrl": "https://res.cloudinary.com/..."
+    }
+  }
+  ```
+
+### Fetch Complaint Detail
+`GET /api/complaints/:id`
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "complaint": {
+      "id": "clt12345",
+      "title": "Water leakage in flat",
+      "description": "Pipe dripping water behind flush tank",
+      "category": "PLUMBING",
+      "priority": "HIGH",
+      "status": "OPEN",
+      "photoUrl": null,
+      "resident": {
+        "name": "Priya Sharma",
+        "flatNumber": "A-101"
+      },
+      "history": [
+        {
+          "id": "hist999",
+          "fromStatus": "OPEN",
+          "toStatus": "IN_PROGRESS",
+          "remark": "Plumbing contractor assigned",
+          "createdAt": "2026-07-12T15:00:00Z",
+          "changedBy": {
+            "name": "Operations Admin"
+          }
+        }
+      ]
+    }
+  }
+  ```
+
+### Transition Ticket Status
+`PATCH /api/complaints/:id/status` (Admin Only)
+- **Body Payload:**
+  ```json
+  {
+    "status": "IN_PROGRESS",
+    "remark": "Plumber scheduled for afternoon visit"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "complaint": {
+      "id": "clt12345",
+      "status": "IN_PROGRESS"
     }
   }
   ```
 
 ---
 
-## 3. Bulletin Board Endpoints
+## 4. Bulletin Board Endpoints
 
-### Publish Notice
-`POST /api/notices`
-- **Body:**
+### List Notices
+`GET /api/notices`
+- **Response (200 OK):**
   ```json
   {
-    "title": "Water tank maintenance Wednesday",
-    "content": "Supply suspended from 9 AM to 5 PM."
+    "success": true,
+    "notices": [
+      {
+        "id": "not123",
+        "title": "Annual Generator Servicing",
+        "content": "Power cuts expected between 2 PM and 4 PM",
+        "isPinned": true,
+        "createdAt": "2026-07-12T09:00:00Z"
+      }
+    ]
+  }
+  ```
+
+### Publish Notice
+`POST /api/notices` (Admin Only)
+- **Body Payload:**
+  ```json
+  {
+    "title": "Annual Generator Servicing",
+    "content": "Power cuts expected between 2 PM and 4 PM"
   }
   ```
 - **Response (201 Created):**
@@ -121,22 +283,77 @@ The backend REST API is hosted at `/api`. All endpoints except auth routes requi
   {
     "success": true,
     "notice": {
-      "id": "not123456",
-      "title": "Water tank...",
+      "id": "not123",
+      "title": "Annual Generator Servicing",
       "isPinned": false
     }
   }
   ```
 
-### Toggle Pin
-`PATCH /api/notices/:id/pin`
+### Toggle Pin Status
+`PATCH /api/notices/:id/pin` (Admin Only)
 - **Response (200 OK):**
   ```json
   {
     "success": true,
     "notice": {
-      "id": "not123456",
+      "id": "not123",
       "isPinned": true
     }
+  }
+  ```
+
+---
+
+## 5. AI Integration Endpoints
+
+### Auto-Analyze Text
+`POST /api/ai/analyze-complaint`
+- **Body Payload:**
+  ```json
+  {
+    "text": "Water leakage in bathroom pipe dripping behind flush tank"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": {
+      "title": "Water leakage in bathroom flush tank",
+      "category": "PLUMBING",
+      "priority": "HIGH",
+      "reasoning": "Leakage involves water waste and requires fast resolution.",
+      "confidence": "HIGH",
+      "summary": "Resident reports water dripping from a pipe behind the bathroom flush tank."
+    }
+  }
+  ```
+
+### Check Semantic Duplicates
+`POST /api/ai/detect-duplicates`
+- **Body Payload:**
+  ```json
+  {
+    "text": "Elevator in Tower B stopped working"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "complaintId": "clt555",
+        "title": "Tower B Lift Outage",
+        "category": "OTHER",
+        "status": "OPEN",
+        "priority": "HIGH",
+        "similarity": 85,
+        "description": "Lift in Tower B has stopped on floor 4.",
+        "residentId": "cuid999",
+        "createdAt": "2026-07-14T10:00:00Z"
+      }
+    ]
   }
   ```

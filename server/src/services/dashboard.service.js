@@ -78,10 +78,6 @@ async function getResidentStats(userId) {
  * @returns {{ role, totalComplaints, byStatus, byCategory, overdueCount }}
  */
 async function getAdminStats() {
-  const overdueThreshold = new Date(
-    Date.now() - OVERDUE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
-  );
-
   const [statusRows, categoryRows, total, overdueCount] = await Promise.all([
     prisma.complaint.groupBy({
       by: ['status'],
@@ -94,8 +90,7 @@ async function getAdminStats() {
     prisma.complaint.count(),
     prisma.complaint.count({
       where: {
-        status:    { not: STATUS.RESOLVED },
-        createdAt: { lt: overdueThreshold },
+        isOverdue: true,
       },
     }),
   ]);

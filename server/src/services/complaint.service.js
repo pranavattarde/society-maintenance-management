@@ -5,23 +5,7 @@ const ApiError = require('../utils/ApiError');
 const { ROLES, STATUS, CATEGORY, PRIORITY, ALLOWED_STATUS_TRANSITIONS, OVERDUE_THRESHOLD_DAYS } = require('../utils/constants');
 const { sendStatusUpdateEmail } = require('./email.service');
 
-// ─── Private Helpers ──────────────────────────────────────────────────────────
 
-/**
- * Attaches the dynamic `isOverdue` flag to a complaint.
- *
- * A complaint is considered overdue if it is not resolved (not in STATUS.RESOLVED)
- * and its createdAt date is older than OVERDUE_THRESHOLD_DAYS.
- *
- * @param {object} complaint
- * @returns {object}
- */
-function attachOverdueFlag(complaint) {
-  if (!complaint) return null;
-  const threshold = new Date(Date.now() - OVERDUE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000);
-  const isOverdue = complaint.status !== STATUS.RESOLVED && new Date(complaint.createdAt) < threshold;
-  return { ...complaint, isOverdue };
-}
 
 /**
  * Uploads a file buffer to Cloudinary using a writable stream.
@@ -88,6 +72,7 @@ async function createComplaint(data, residentId, file) {
       category: true,
       priority: true,
       status: true,
+      isOverdue: true,
       photoUrl: true,
       createdAt: true,
       resident: {
@@ -178,12 +163,13 @@ async function listComplaints(filters, user) {
       category: true,
       priority: true,
       status: true,
+      isOverdue: true,
       createdAt: true,
       resident: { select: { name: true, flatNumber: true } },
     },
   });
 
-  return complaints.map(attachOverdueFlag);
+  return complaints;
 }
 
 /**
@@ -210,6 +196,7 @@ async function getComplaintById(id, user) {
       category: true,
       priority: true,
       status: true,
+      isOverdue: true,
       photoUrl: true,
       createdAt: true,
       updatedAt: true,
@@ -237,7 +224,7 @@ async function getComplaintById(id, user) {
     throw new ApiError(403, 'You do not have permission to view this complaint');
   }
 
-  return attachOverdueFlag(complaint);
+  return complaint;
 }
 
 /**
@@ -287,9 +274,13 @@ async function updateComplaintStatus(id, data, admin) {
 
   // Atomically update the complaint and append the history record
   await prisma.$transaction(async (tx) => {
+    const updateData = { status: newStatus };
+    if (newStatus === STATUS.RESOLVED) {
+      updateData.isOverdue = false;
+    }
     await tx.complaint.update({
       where: { id },
-      data: { status: newStatus },
+      data: updateData,
     });
 
     await tx.complaintHistory.create({
@@ -319,13 +310,8 @@ async function updateComplaintStatus(id, data, admin) {
 }
 
 async function getOverdueCount(residentId) {
-  const overdueThreshold = new Date(
-    Date.now() - OVERDUE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
-  );
-
   const where = {
-    status: { not: STATUS.RESOLVED },
-    createdAt: { lt: overdueThreshold },
+    isOverdue: true,
   };
 
   if (residentId) {

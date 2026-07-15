@@ -135,7 +135,7 @@ export default function Register() {
             </svg>
           </div>
           <h1 className="auth-title">Create Account</h1>
-          <p className="auth-subtitle">Join the Grand Arch Residences community</p>
+          <p className="auth-subtitle">Join the Society Maintenance Management platform</p>
         </header>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>

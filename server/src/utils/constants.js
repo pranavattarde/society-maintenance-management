@@ -49,6 +49,7 @@ const BCRYPT_SALT_ROUNDS = 12;
 const ALLOWED_PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
 
 module.exports = {
   ROLES,
@@ -60,4 +61,5 @@ module.exports = {
   BCRYPT_SALT_ROUNDS,
   ALLOWED_PHOTO_MIME_TYPES,
   MAX_PHOTO_SIZE_BYTES,
+  MAX_AVATAR_SIZE_BYTES,
 };

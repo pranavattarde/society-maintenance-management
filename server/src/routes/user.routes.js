@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { list, updateRole, updateProfile } = require('../controllers/user.controller');
 const authenticate = require('../middleware/authenticate');
 const authorize = require('../middleware/authorize');
-const upload = require('../middleware/upload');
+const { uploadAvatar } = require('../middleware/upload');
 const { ROLES } = require('../utils/constants');
 
 const router = Router();
@@ -11,7 +11,7 @@ const router = Router();
 router.use(authenticate);
 
 // Profile update is available to all logged in users
-router.patch('/profile', upload.single('avatar'), updateProfile);
+router.patch('/profile', uploadAvatar.single('avatar'), updateProfile);
 
 // Admin-only routes
 router.get('/', authorize(ROLES.ADMIN), list);
