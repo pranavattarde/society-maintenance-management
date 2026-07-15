@@ -5,7 +5,7 @@ import './Navbar.css';
 /**
  * Navbar — persistent left sidebar on desktop/tablet, and top+bottom nav on mobile.
  */
-export default function Navbar() {
+export default function Navbar({ collapsed, onToggle }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -29,6 +29,22 @@ export default function Navbar() {
           <path d="M9 10h6" />
         </svg>
         <span className="nav-brand-text">Grand Arch Residences</span>
+        <button
+          onClick={onToggle}
+          className="nav-collapse-btn"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          type="button"
+        >
+          {collapsed ? (
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          )}
+        </button>
       </div>
 
       {/* Nav Menu */}

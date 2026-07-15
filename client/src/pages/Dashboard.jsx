@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [insightsLoading, setInsightsLoading]   = useState(false);
   const [insightsError, setInsightsError]       = useState('');
   const [lastGenerated, setLastGenerated]       = useState('');
+  const [insightsExpanded, setInsightsExpanded] = useState(true);
 
   async function fetchInsights() {
     if (!token) return;
@@ -41,12 +42,7 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => {
-    if (isAdmin && token) {
-      fetchInsights();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, isAdmin]);
+
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -175,6 +171,22 @@ export default function Dashboard() {
           <p className="page-header-subtitle">Welcome back. Operational status for {todayStr}</p>
         </div>
         <div className="workspace-actions">
+          {isAdmin && !insights && !insightsLoading && !insightsError && (
+            <button
+              onClick={fetchInsights}
+              className="btn btn-primary"
+              disabled={insightsLoading}
+              type="button"
+              style={{
+                background: 'linear-gradient(135deg, var(--color-accent) 0%, #4f46e5 100%)',
+                borderColor: 'transparent',
+                boxShadow: '0 4px 12px rgba(67, 56, 202, 0.2)',
+                marginRight: 'var(--space-3)'
+              }}
+            >
+              ✨ Generate AI Insights
+            </button>
+          )}
           {isAdmin ? (
             <Link to="/notices/new" className="btn btn-primary">
               <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: '6px' }}>
@@ -207,57 +219,71 @@ export default function Dashboard() {
       )}
 
       {/* 🔮 AI Operations Insights Panel (Admin Only) */}
-      {isAdmin && (
+      {isAdmin && (insights || insightsLoading || insightsError) && (
         <div className="workspace-panel ai-insights-panel">
-          <div className="panel-header ai-insights-header">
-            <div className="ai-insights-title">
-              <span className="ai-insights-sparkle">✨</span>
-              AI Operations Insights
-              {lastGenerated && (
-                <span className="ai-insights-timestamp">Last generated at {lastGenerated}</span>
-              )}
-            </div>
-            <button
-              onClick={fetchInsights}
-              className="btn btn-secondary btn-xs ai-insights-refresh-btn"
-              disabled={insightsLoading}
-              type="button"
+          <div className="panel-header ai-insights-header" style={{ paddingBottom: insightsExpanded ? 'var(--space-3)' : '0', borderBottom: insightsExpanded ? '1px solid var(--color-gray-100)' : 'none' }}>
+            <div
+              className="ai-insights-title"
+              onClick={() => setInsightsExpanded(!insightsExpanded)}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', width: '100%', userSelect: 'none' }}
             >
-              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={insightsLoading ? 'spin-animation' : ''} style={{ marginRight: '4px', verticalAlign: 'middle' }}>
-                <path d="M21.5 2v6h-6" />
-                <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-              </svg>
-              {insightsLoading ? 'Refreshing...' : 'Refresh'}
-            </button>
-          </div>
-
-          <div className="ai-insights-body">
-            {insightsLoading ? (
-              <div className="ai-insights-loading">
-                <div className="skeleton" style={{ width: '80%', height: '14px', marginBottom: '8px' }} />
-                <div className="skeleton" style={{ width: '90%', height: '14px', marginBottom: '8px' }} />
-                <div className="skeleton" style={{ width: '75%', height: '14px' }} />
-              </div>
-            ) : insightsError ? (
-              <div className="ai-insights-error">
-                <p>{insightsError}</p>
-                <button onClick={fetchInsights} className="btn btn-secondary btn-sm" style={{ marginTop: '8px' }}>
-                  Retry Generating
-                </button>
-              </div>
-            ) : insights && insights.length > 0 ? (
-              <ul className="ai-insights-list">
-                {insights.map((insight, idx) => (
-                  <li key={idx} className="ai-insight-item">
-                    <span className="ai-insight-dot">•</span>
-                    <span className="ai-insight-text">{insight}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted text-xs">Click Refresh to generate operational insights.</p>
+              <span className="ai-insights-sparkle">✨</span>
+              <span>AI Operations Insights</span>
+              {lastGenerated && (
+                <span className="ai-insights-timestamp" style={{ marginLeft: 'auto', marginRight: 'var(--space-4)' }}>
+                  Last generated at {lastGenerated}
+                </span>
+              )}
+              <span className="ai-insights-toggle-icon" style={{ marginLeft: lastGenerated ? '0' : 'auto', fontSize: '10px', color: 'var(--color-gray-400)' }}>
+                {insightsExpanded ? '▲' : '▼'}
+              </span>
+            </div>
+            {insightsExpanded && (
+              <button
+                onClick={fetchInsights}
+                className="btn btn-secondary btn-xs ai-insights-refresh-btn"
+                disabled={insightsLoading}
+                type="button"
+                style={{ marginLeft: 'var(--space-2)' }}
+              >
+                <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={insightsLoading ? 'spin-animation' : ''} style={{ marginRight: '4px', verticalAlign: 'middle' }}>
+                  <path d="M21.5 2v6h-6" />
+                  <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                </svg>
+                {insightsLoading ? 'Refreshing...' : 'Refresh'}
+              </button>
             )}
           </div>
+
+          {insightsExpanded && (
+            <div className="ai-insights-body">
+              {insightsLoading ? (
+                <div className="ai-insights-loading">
+                  <div className="skeleton" style={{ width: '80%', height: '14px', marginBottom: '8px' }} />
+                  <div className="skeleton" style={{ width: '90%', height: '14px', marginBottom: '8px' }} />
+                  <div className="skeleton" style={{ width: '75%', height: '14px' }} />
+                </div>
+              ) : insightsError ? (
+                <div className="ai-insights-error">
+                  <p>{insightsError}</p>
+                  <button onClick={fetchInsights} className="btn btn-secondary btn-sm" style={{ marginTop: '8px' }}>
+                    Retry Generating
+                  </button>
+                </div>
+              ) : insights && insights.length > 0 ? (
+                <ul className="ai-insights-list">
+                  {insights.map((insight, idx) => (
+                    <li key={idx} className="ai-insight-item">
+                      <span className="ai-insight-dot">•</span>
+                      <span className="ai-insight-text">{insight}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted text-xs">Click Refresh to generate operational insights.</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
