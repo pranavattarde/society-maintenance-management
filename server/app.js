@@ -12,11 +12,24 @@ const app = express();
 // ─── Core Middleware ───────────────────────────────────────────────────────────
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: process.env.CLIENT_URL,
   credentials: true,
 }));
 
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Society Maintenance API is running",
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+  });
+});
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
