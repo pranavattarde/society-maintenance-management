@@ -231,7 +231,7 @@ function ConfidenceVisual({ confidence }) {
 }
 
 function ResultState({ suggestions, onAccept, onDismiss }) {
-  const { title, category, priority, summary, reasoning, confidence } = suggestions;
+  const { title, category, priority, refinedDescription, summary, reasoning, confidence } = suggestions;
 
   const categoryLabel = CATEGORY_LABELS[category] || category;
   const priorityLabel = PRIORITY_LABELS[priority]  || priority;
@@ -241,6 +241,9 @@ function ResultState({ suggestions, onAccept, onDismiss }) {
       {/* Structured suggestions */}
       <div className="ai-suggestions-grid">
         <SuggestionRow label="Suggested Title"    value={title}         />
+        {refinedDescription && (
+          <SuggestionRow label="Refined Description" value={refinedDescription} variant="summary" />
+        )}
         <SuggestionRow label="Suggested Category" value={categoryLabel} variant="mono" />
         <SuggestionRow label="Suggested Priority" value={priorityLabel} variant="mono" />
         <SuggestionRow label="Complaint Summary"  value={summary}       variant="summary" />

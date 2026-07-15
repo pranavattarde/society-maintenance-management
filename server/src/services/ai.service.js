@@ -46,6 +46,7 @@ Return exactly this JSON structure:
   "title": "A concise 5-10 word title summarising the issue",
   "category": "One of: PLUMBING, ELECTRICAL, CLEANING, SECURITY, LIFT, PARKING, OTHER",
   "priority": "One of: LOW, MEDIUM, HIGH",
+  "refinedDescription": "A grammatically corrected, professionally written version of the input description, keeping all original facts intact. If the input is already clear, return it verbatim.",
   "summary": "One sentence summary suitable for an admin dashboard",
   "reasoning": "Brief explanation of why you chose this category and priority",
   "confidence": <integer 0-100 representing your confidence in this classification>
@@ -132,7 +133,7 @@ function parseAndValidate(rawContent) {
     throw new ApiError(422, 'AI returned malformed JSON. Please try again.');
   }
 
-  const { title, category, priority, summary, reasoning, confidence } = parsed;
+  const { title, category, priority, refinedDescription, summary, reasoning, confidence } = parsed;
 
   if (!title || typeof title !== 'string') {
     throw new ApiError(422, 'AI response missing valid title field.');
@@ -154,6 +155,7 @@ function parseAndValidate(rawContent) {
     title:      title.trim().slice(0, 100),
     category:   normCategory,
     priority:   normPriority,
+    refinedDescription: (refinedDescription || '').toString().trim(),
     summary:    (summary   || '').toString().trim(),
     reasoning:  (reasoning || '').toString().trim(),
     confidence: normConfidence,

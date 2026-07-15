@@ -162,12 +162,13 @@ export default function CreateComplaint() {
     if (!aiSuggestions) return;
     setForm((prev) => ({
       ...prev,
-      title:    aiSuggestions.title    || prev.title,
-      category: aiSuggestions.category || prev.category,
-      priority: aiSuggestions.priority || prev.priority,
+      title:       aiSuggestions.title       || prev.title,
+      description: aiSuggestions.refinedDescription || prev.description,
+      category:    aiSuggestions.category    || prev.category,
+      priority:    aiSuggestions.priority    || prev.priority,
     }));
     // Clear any validation errors that were showing for these fields
-    setFieldErrors((prev) => ({ ...prev, title: '', category: '', priority: '' }));
+    setFieldErrors((prev) => ({ ...prev, title: '', description: '', category: '', priority: '' }));
     setAiStatus('idle');
     setAiSuggestions(null);
     setAiDismissed(true);
