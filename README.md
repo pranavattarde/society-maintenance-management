@@ -117,13 +117,13 @@ All protected endpoints require passing a valid JWT token in the `Authorization:
 - `PATCH /api/users/profile` — Update the logged-in user's profile information and avatar.
 
 ### Complaint Tickets
-- `GET /api/complaints` — Retrieve complaints list based on filter queries.
+- `GET /api/complaints` — Retrieve complaints list based on filter and page/limit query parameters.
 - `POST /api/complaints` — Submit a ticket (multipart/form-data with photo upload).
 - `GET /api/complaints/:id` — Retrieve details and chronological history log of a ticket.
-- `PATCH /api/complaints/:id/status` — Transition ticket status and append remarks (Admin only).
+- `PATCH /api/complaints/:id/status` — Transition ticket status, override priority, and append remarks (Admin only).
 
 ### Bulletin Notices
-- `GET /api/notices` — Retrieve all notice bulletins (pinned notices appear first).
+- `GET /api/notices` — Retrieve notices list based on page/limit queries (pinned notices appear first).
 - `POST /api/notices` — Publish a new bulletin notice (Admin only).
 - `PATCH /api/notices/:id` — Edit an existing bulletin notice (Admin only).
 - `DELETE /api/notices/:id` — Delete a notice (Admin only).
@@ -234,7 +234,7 @@ To build and run the entire stack (PostgreSQL, Express backend, React client):
 ### Running Locally (Without Docker)
 
 #### Prerequisites
-- Node.js (v18 or higher)
+- Node.js (v20.x)
 - A running PostgreSQL instance
 
 #### Setup Database and Server
@@ -267,6 +267,14 @@ To build and run the entire stack (PostgreSQL, Express backend, React client):
    npm run dev
    ```
 3. Open `http://localhost:5173` in your browser.
+
+#### Running Tests
+Automated tests can be executed inside the `server` directory:
+```bash
+cd server
+npm run test
+```
+All unit and integration tests utilize mocking stubs for third-party endpoints and database drivers, allowing verification checks to complete successfully without a live PostgreSQL engine or active internet connection.
 
 ---
 

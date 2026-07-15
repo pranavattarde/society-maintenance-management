@@ -55,11 +55,12 @@ export default function ComplaintDetail() {
 
   // ── Status update form state ───────────────────────────────────────────────
   const [newStatus, setNewStatus]   = useState('');
+  const [newPriority, setNewPriority] = useState('');
   const [remark, setRemark]         = useState('');
   const [updateError, setUpdateError] = useState('');
   const [updating, setUpdating]     = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
-
+ 
   useEffect(() => {
     async function fetchComplaint() {
       setLoading(true);
@@ -69,6 +70,7 @@ export default function ComplaintDetail() {
         setComplaint(data.complaint);
         // Reset inputs on fresh load
         setNewStatus('');
+        setNewPriority('');
         setRemark('');
         setUpdateError('');
       } catch (err) {
@@ -77,28 +79,31 @@ export default function ComplaintDetail() {
         setLoading(false);
       }
     }
-
+ 
     fetchComplaint();
   }, [id, token, refetchTrigger]);
-
+ 
   async function handleStatusUpdate(e) {
     e.preventDefault();
-    if (!newStatus) return;
-
+    if (!newStatus && !newPriority) {
+      setUpdateError('Please select a status transition or a priority override.');
+      return;
+    }
+ 
     setUpdateError('');
     setSuccessMsg('');
     setUpdating(true);
     try {
-      await complaintsApi.updateStatus(
-        id,
-        { status: newStatus, remark: remark.trim() || null },
-        token
-      );
-      setSuccessMsg('Status updated.');
+      const payload = { remark: remark.trim() || null };
+      if (newStatus) payload.status = newStatus;
+      if (newPriority) payload.priority = newPriority;
+
+      await complaintsApi.updateStatus(id, payload, token);
+      setSuccessMsg('Complaint updated successfully.');
       setRefetchTrigger((t) => t + 1); // trigger local refresh
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      setUpdateError(err.message || 'Failed to update status');
+      setUpdateError(err.message || 'Failed to update complaint');
     } finally {
       setUpdating(false);
     }
@@ -321,6 +326,24 @@ export default function ComplaintDetail() {
                     {allowedTransitions.map((s) => (
                       <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                     ))}
+                  </select>
+                </div>
+
+                <div className="form-group" style={{ marginTop: 'var(--space-3)' }}>
+                  <label htmlFor="new-priority" className="form-label">
+                    Override Priority
+                  </label>
+                  <select
+                    id="new-priority"
+                    className="form-select"
+                    value={newPriority}
+                    onChange={(e) => setNewPriority(e.target.value)}
+                    disabled={updating}
+                  >
+                    <option value="">— Keep current priority —</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
                   </select>
                 </div>
 

@@ -7,15 +7,15 @@ const {
 } = require('../services/notice.service');
 
 /**
- * Notice Controller — Phase 4 stub.
+ * Notice Controller
  *
- * Implemented in Phase 4 — Remaining Features.
+ * Exposes routes to manage the announcement bulletin board.
  */
 
 async function list(req, res, next) {
   try {
-    const notices = await listNotices();
-    res.status(200).json({ notices });
+    const result = await listNotices(req.query);
+    res.status(200).json(result);
   } catch (err) {
     next(err);
   }

@@ -44,9 +44,25 @@ test('Unit Tests — Complaints & AI Parser', async (t) => {
     const errorsValid = validateUpdateStatus(validStatus);
     assert.strictEqual(errorsValid.length, 0);
 
+    const validPriority = { priority: 'HIGH' };
+    const errorsValidPriority = validateUpdateStatus(validPriority);
+    assert.strictEqual(errorsValidPriority.length, 0);
+
+    const validBoth = { status: 'IN_PROGRESS', priority: 'LOW' };
+    const errorsValidBoth = validateUpdateStatus(validBoth);
+    assert.strictEqual(errorsValidBoth.length, 0);
+
     const badStatus = { status: 'UNKNOWN_STATUS' };
     const errorsBadStatus = validateUpdateStatus(badStatus);
     assert.ok(errorsBadStatus.some(e => e.includes('Status must be one of')));
+
+    const badPriority = { priority: 'CRITICAL' };
+    const errorsBadPriority = validateUpdateStatus(badPriority);
+    assert.ok(errorsBadPriority.some(e => e.includes('Priority must be one of')));
+
+    const emptyPayload = {};
+    const errorsEmpty = validateUpdateStatus(emptyPayload);
+    assert.ok(errorsEmpty.some(e => e.includes('At least one of status or priority override must be provided')));
   });
 
   await t.test('Status Transition Rules — ALLOWED_STATUS_TRANSITIONS enforcements', () => {

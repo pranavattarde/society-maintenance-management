@@ -22,8 +22,8 @@ async function create(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const complaints = await listComplaints(req.query, req.user);
-    res.status(200).json({ complaints });
+    const result = await listComplaints(req.query, req.user);
+    res.status(200).json(result);
   } catch (err) {
     next(err);
   }

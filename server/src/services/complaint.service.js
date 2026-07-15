@@ -107,14 +107,20 @@ async function createComplaint(data, residentId, file) {
  */
 async function listComplaints(filters, user) {
   const { status, category, priority, search, date } = filters;
+ 
+  // Extract pagination params
+  const page = parseInt(filters.page, 10) || 1;
+  const limit = parseInt(filters.limit, 10) || 10;
+  const skip = (page - 1) * limit;
+  const take = limit;
 
   const where = {};
-
+ 
   // Residents see only their own complaints
   if (user.role === ROLES.RESIDENT) {
     where.residentId = user.id;
   }
-
+ 
   // Validate and apply status filter
   if (status) {
     if (status === 'UNRESOLVED') {
@@ -123,17 +129,17 @@ async function listComplaints(filters, user) {
       where.status = status;
     }
   }
-
+ 
   // Validate and apply category filter
   if (category && Object.values(CATEGORY).includes(category)) {
     where.category = category;
   }
-
+ 
   // Validate and apply priority filter
   if (priority && Object.values(PRIORITY).includes(priority)) {
     where.priority = priority;
   }
-
+ 
   // Apply search keyword filter
   if (search && typeof search === 'string' && search.trim()) {
     const term = search.trim();
@@ -144,7 +150,7 @@ async function listComplaints(filters, user) {
       { resident: { name: { contains: term, mode: 'insensitive' } } },
     ];
   }
-
+ 
   // Date filter: show complaints created on or after midnight of the given date
   if (date) {
     const since = new Date(date);
@@ -152,24 +158,39 @@ async function listComplaints(filters, user) {
       where.createdAt = { gte: since };
     }
   }
+ 
+  // Parallel execution of count and slice fetching to avoid N+1 and minimize memory load
+  const [totalItems, complaints] = await Promise.all([
+    prisma.complaint.count({ where }),
+    prisma.complaint.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        category: true,
+        priority: true,
+        status: true,
+        isOverdue: true,
+        createdAt: true,
+        resident: { select: { name: true, flatNumber: true } },
+      },
+    }),
+  ]);
 
-  const complaints = await prisma.complaint.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      category: true,
-      priority: true,
-      status: true,
-      isOverdue: true,
-      createdAt: true,
-      resident: { select: { name: true, flatNumber: true } },
-    },
-  });
-
-  return complaints;
+  const totalPages = Math.ceil(totalItems / limit);
+ 
+  return {
+    currentPage: page,
+    totalPages,
+    totalItems,
+    hasNextPage: page < totalPages,
+    hasPreviousPage: page > 1,
+    items: complaints,
+  };
 }
 
 /**
@@ -248,13 +269,14 @@ async function getComplaintById(id, user) {
  * @throws {ApiError} 404 — not found | 400 — invalid transition
  */
 async function updateComplaintStatus(id, data, admin) {
-  const { status: newStatus, remark } = data;
+  const { status: newStatus, priority: newPriority, remark } = data;
 
   // Load current status + resident contact details for email notification
   const existing = await prisma.complaint.findUnique({
     where: { id },
     select: {
       status: true,
+      priority: true,
       title: true,
       resident: { select: { name: true, email: true } },
     },
@@ -264,20 +286,37 @@ async function updateComplaintStatus(id, data, admin) {
     throw new ApiError(404, 'Complaint not found');
   }
 
-  const allowed = ALLOWED_STATUS_TRANSITIONS[existing.status] || [];
-  if (!allowed.includes(newStatus)) {
-    throw new ApiError(
-      400,
-      `Status cannot transition from ${existing.status} to ${newStatus}`
-    );
+  const updateData = {};
+  let statusChanged = false;
+  let priorityChanged = false;
+
+  if (newPriority && newPriority !== existing.priority) {
+    updateData.priority = newPriority;
+    priorityChanged = true;
+  }
+
+  if (newStatus && newStatus !== existing.status) {
+    const allowed = ALLOWED_STATUS_TRANSITIONS[existing.status] || [];
+    if (!allowed.includes(newStatus)) {
+      throw new ApiError(
+        400,
+        `Status cannot transition from ${existing.status} to ${newStatus}`
+      );
+    }
+    updateData.status = newStatus;
+    statusChanged = true;
+    if (newStatus === STATUS.RESOLVED) {
+      updateData.isOverdue = false;
+    }
+  }
+
+  // If nothing changed, return immediately
+  if (!statusChanged && !priorityChanged) {
+    return getComplaintById(id, admin);
   }
 
   // Atomically update the complaint and append the history record
   await prisma.$transaction(async (tx) => {
-    const updateData = { status: newStatus };
-    if (newStatus === STATUS.RESOLVED) {
-      updateData.isOverdue = false;
-    }
     await tx.complaint.update({
       where: { id },
       data: updateData,
@@ -288,24 +327,28 @@ async function updateComplaintStatus(id, data, admin) {
         complaintId: id,
         changedById: admin.id,
         fromStatus: existing.status,
-        toStatus: newStatus,
-        remark: remark?.trim() || null,
+        toStatus: statusChanged ? newStatus : existing.status,
+        remark: remark?.trim()
+          ? remark.trim()
+          : (priorityChanged && !statusChanged)
+            ? `[Priority Override] Priority updated from ${existing.priority} to ${newPriority}`
+            : null,
       },
     });
   });
 
-  // Fire-and-forget: notify the resident that their complaint status changed.
-  // Not awaited — email failure does not block or delay the API response.
-  sendStatusUpdateEmail(
-    existing.resident,
-    { id, title: existing.title },
-    newStatus,
-    remark?.trim() || null
-  ).catch((err) => {
-    console.error('[email] Status update notification failed:', err.message);
-  });
+  // Fire-and-forget: notify the resident if status changed
+  if (statusChanged) {
+    sendStatusUpdateEmail(
+      existing.resident,
+      { id, title: existing.title },
+      newStatus,
+      remark?.trim() || null
+    ).catch((err) => {
+      console.error('[email] Status update notification failed:', err.message);
+    });
+  }
 
-  // Return the full complaint with updated history for the API response
   return getComplaintById(id, admin);
 }
 

@@ -50,6 +50,13 @@ export default function Notices() {
   const [successMsg, setSuccessMsg] = useState('');
   const location = useLocation();
 
+  // Pagination state
+  const [page, setPage]                       = useState(1);
+  const [totalPages, setTotalPages]           = useState(1);
+  const [totalItems, setTotalItems]           = useState(0);
+  const [hasNextPage, setHasNextPage]         = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
+
   // ── Inline edit state ──────────────────────────────────────────────────────
   const [editingId, setEditingId]         = useState(null);
   const [editForm, setEditForm]           = useState({ title: '', content: '' });
@@ -68,8 +75,12 @@ export default function Notices() {
       setLoading(true);
       setError('');
       try {
-        const data = await noticesApi.list(token);
-        setNotices(data.notices);
+        const data = await noticesApi.list({ page, limit: 10 }, token);
+        setNotices(data.items || []);
+        setTotalPages(data.totalPages || 1);
+        setTotalItems(data.totalItems || 0);
+        setHasNextPage(data.hasNextPage || false);
+        setHasPreviousPage(data.hasPreviousPage || false);
       } catch (err) {
         setError(err.message || 'Failed to load notices');
       } finally {
@@ -78,7 +89,7 @@ export default function Notices() {
     }
 
     fetchNotices();
-  }, [token]);
+  }, [token, page]);
 
   // Check for redirected state success message
   useEffect(() => {
@@ -393,6 +404,31 @@ export default function Notices() {
               )}
             </article>
           ))}
+        </div>
+      )}
+
+      {/* Server-Side Pagination controls */}
+      {!loading && totalItems > 10 && (
+        <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '24px', padding: '12px 0' }}>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={!hasPreviousPage}
+            style={{ minWidth: '90px' }}
+          >
+            Previous
+          </button>
+          <span className="pagination-info" style={{ fontSize: '14px', fontWeight: '500', color: 'var(--color-gray-700)' }}>
+            Page {page} of {totalPages}
+          </span>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={!hasNextPage}
+            style={{ minWidth: '90px' }}
+          >
+            Next
+          </button>
         </div>
       )}
 

@@ -51,21 +51,17 @@ export default function Dashboard() {
       try {
         const [statsData, complaintsData, noticesData] = await Promise.all([
           dashboardApi.get(token),
-          complaintsApi.list({}, token),
-          noticesApi.list(token)
+          complaintsApi.list({ status: 'UNRESOLVED', limit: 5 }, token),
+          noticesApi.list({ limit: 3 }, token)
         ]);
 
         setStats(statsData);
 
-        // Filter active/unresolved complaints (OPEN or IN_PROGRESS)
-        const unresolved = (complaintsData.complaints || [])
-          .filter((c) => c.status !== 'RESOLVED')
-          .slice(0, 5);
-        setActiveComplaints(unresolved);
+        // Retrieve active/unresolved complaints directly from paginated items
+        setActiveComplaints(complaintsData.items || []);
 
-        // Top 3 recent notices
-        const noticesList = (noticesData.notices || []).slice(0, 3);
-        setLatestNotices(noticesList);
+        // Top 3 recent notices from items list
+        setLatestNotices(noticesData.items || []);
       } catch (err) {
         setError(err.message || 'Failed to load dashboard workspace');
       } finally {

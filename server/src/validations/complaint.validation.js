@@ -46,11 +46,20 @@ function validateCreateComplaint(data) {
 function validateUpdateStatus(data) {
   const errors = [];
 
-  const { STATUS } = require('../utils/constants');
+  const { STATUS, PRIORITY } = require('../utils/constants');
   const VALID_STATUSES = Object.values(STATUS);
+  const VALID_PRIORITIES = Object.values(PRIORITY);
 
-  if (!data.status || !VALID_STATUSES.includes(data.status)) {
+  if (data.status && !VALID_STATUSES.includes(data.status)) {
     errors.push(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
+  }
+
+  if (data.priority && !VALID_PRIORITIES.includes(data.priority)) {
+    errors.push(`Priority must be one of: ${VALID_PRIORITIES.join(', ')}`);
+  }
+
+  if (!data.status && !data.priority) {
+    errors.push('At least one of status or priority override must be provided');
   }
 
   return errors;

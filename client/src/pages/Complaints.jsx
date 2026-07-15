@@ -16,6 +16,13 @@ export default function Complaints() {
   const [complaints, setComplaints]     = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
+ 
+  // Pagination state
+  const [page, setPage]                       = useState(1);
+  const [totalPages, setTotalPages]           = useState(1);
+  const [totalItems, setTotalItems]           = useState(0);
+  const [hasNextPage, setHasNextPage]         = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
   // Filter state
   const [statusFilter, setStatusFilter]     = useState('');
@@ -31,12 +38,17 @@ export default function Complaints() {
 
   const hasActiveFilters = Boolean(statusFilter || categoryFilter || priorityFilter || searchFilter || dateFilter);
 
+  // Reset to first page when any search filter is updated
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, categoryFilter, priorityFilter, searchFilter, dateFilter]);
+
   useEffect(() => {
     async function fetchComplaints() {
       setLoading(true);
       setError('');
       try {
-        const params = {};
+        const params = { page, limit: 10 };
         if (statusFilter)              params.status   = statusFilter;
         if (categoryFilter)            params.category = categoryFilter;
         if (priorityFilter)            params.priority = priorityFilter;
@@ -44,7 +56,11 @@ export default function Complaints() {
         if (isAdmin && dateFilter)     params.date     = dateFilter;
 
         const data = await complaintsApi.list(params, token);
-        setComplaints(data.complaints);
+        setComplaints(data.items || []);
+        setTotalPages(data.totalPages || 1);
+        setTotalItems(data.totalItems || 0);
+        setHasNextPage(data.hasNextPage || false);
+        setHasPreviousPage(data.hasPreviousPage || false);
       } catch (err) {
         setError(err.message || 'Failed to load complaints');
       } finally {
@@ -53,7 +69,7 @@ export default function Complaints() {
     }
 
     fetchComplaints();
-  }, [statusFilter, categoryFilter, priorityFilter, searchFilter, dateFilter, token, isAdmin]);
+  }, [statusFilter, categoryFilter, priorityFilter, searchFilter, dateFilter, page, token, isAdmin]);
 
   function clearFilters() {
     setStatusFilter('');
@@ -63,6 +79,7 @@ export default function Complaints() {
     setDateFilter('');
     setAiQuery('');
     setAiError('');
+    setPage(1);
   }
 
   async function handleAiSearch(e) {
@@ -236,7 +253,7 @@ export default function Complaints() {
       </div>
 
       <div className="complaints-count">
-        Showing {complaints.length} complaint{complaints.length !== 1 ? 's' : ''}
+        Showing {complaints.length} of {totalItems} complaint{totalItems !== 1 ? 's' : ''}
       </div>
 
       {/* Main Backlog Output */}
@@ -292,11 +309,38 @@ export default function Complaints() {
         </div>
 
       ) : (
-        <div className="complaints-list-container">
-          {complaints.map((complaint) => (
-            <ComplaintCard key={complaint.id} complaint={complaint} />
-          ))}
-        </div>
+        <>
+          <div className="complaints-list-container">
+            {complaints.map((complaint) => (
+              <ComplaintCard key={complaint.id} complaint={complaint} />
+            ))}
+          </div>
+
+          {/* Proper Server-Side Pagination Bar */}
+          {totalItems > 10 && (
+            <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '24px', padding: '12px 0' }}>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={!hasPreviousPage}
+                style={{ minWidth: '90px' }}
+              >
+                Previous
+              </button>
+              <span className="pagination-info" style={{ fontSize: '14px', fontWeight: '500', color: 'var(--color-gray-700)' }}>
+                Page {page} of {totalPages}
+              </span>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={!hasNextPage}
+                style={{ minWidth: '90px' }}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
 
     </div>

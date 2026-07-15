@@ -75,7 +75,10 @@ export const complaints = {
 // ─── Notices ──────────────────────────────────────────────────────────────────
 
 export const notices = {
-  list: (token) => request('GET', '/notices', null, token),
+  list: (params = {}, token) => {
+    const query = new URLSearchParams(params).toString();
+    return request('GET', `/notices${query ? `?${query}` : ''}`, null, token);
+  },
   create: (data, token) => request('POST', '/notices', data, token),
   update: (id, data, token) => request('PATCH', `/notices/${id}`, data, token),
   togglePin: (id, token) => request('PATCH', `/notices/${id}/pin`, null, token),

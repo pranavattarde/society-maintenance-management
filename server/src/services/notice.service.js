@@ -30,24 +30,35 @@ async function assertExists(id) {
 
 // ─── Service Functions ────────────────────────────────────────────────────────
 
-/**
- * Creates a new notice. isPinned defaults to false (schema default).
- *
- * @param {{ title: string, content: string }} data - Validated request body
- * @param {string} authorId - Admin user ID from req.user.id
- * @returns {object} Created notice
- */
 async function createNotice(data, authorId) {
-  const { title, content } = data;
+  const { title, content, isPinned } = data;
+  const shouldBePinned = Boolean(isPinned);
 
-  return prisma.notice.create({
+  const notice = await prisma.notice.create({
     data: {
       title:    title.trim(),
       content:  content.trim(),
+      isPinned: shouldBePinned,
       authorId,
     },
     select: NOTICE_SELECT,
   });
+
+  // If the notice is marked as important (pinned) on creation, notify residents
+  if (shouldBePinned) {
+    prisma.user.findMany({
+      where: { role: ROLES.RESIDENT },
+      select: { name: true, email: true },
+    }).then((residents) => {
+      sendNoticeEmail(residents, notice).catch((err) => {
+        console.error('[email] Important notice creation email notification failed:', err.message);
+      });
+    }).catch((err) => {
+      console.error('[email] Failed to fetch residents for important notice notification:', err.message);
+    });
+  }
+
+  return notice;
 }
 
 /**
@@ -57,14 +68,35 @@ async function createNotice(data, authorId) {
  *
  * @returns {object[]}
  */
-async function listNotices() {
-  return prisma.notice.findMany({
-    orderBy: [
-      { isPinned: 'desc' },
-      { createdAt: 'desc' },
-    ],
-    select: NOTICE_SELECT,
-  });
+async function listNotices(filters = {}) {
+  const page = parseInt(filters.page, 10) || 1;
+  const limit = parseInt(filters.limit, 10) || 10;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [totalItems, notices] = await Promise.all([
+    prisma.notice.count(),
+    prisma.notice.findMany({
+      orderBy: [
+        { isPinned: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      skip,
+      take,
+      select: NOTICE_SELECT,
+    }),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    currentPage: page,
+    totalPages,
+    totalItems,
+    hasNextPage: page < totalPages,
+    hasPreviousPage: page > 1,
+    items: notices,
+  };
 }
 
 /**

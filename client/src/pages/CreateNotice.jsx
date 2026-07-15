@@ -33,6 +33,7 @@ export default function CreateNotice() {
   const navigate  = useNavigate();
 
   const [form, setForm]             = useState({ title: '', content: '' });
+  const [isPinned, setIsPinned]     = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiError, setApiError]     = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -94,7 +95,7 @@ export default function CreateNotice() {
     setSubmitting(true);
     try {
       await noticesApi.create(
-        { title: form.title.trim(), content: form.content.trim() },
+        { title: form.title.trim(), content: form.content.trim(), isPinned },
         token
       );
       navigate('/notices', { state: { success: 'Notice published.' } });
@@ -261,6 +262,21 @@ export default function CreateNotice() {
             {fieldErrors.content && (
               <p className="form-error">{fieldErrors.content}</p>
             )}
+          </div>
+
+          {/* Mark as Important -------------------------------------------- */}
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--space-4)' }}>
+            <input
+              id="notice-important"
+              type="checkbox"
+              checked={isPinned}
+              onChange={(e) => setIsPinned(e.target.checked)}
+              disabled={submitting}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            <label htmlFor="notice-important" style={{ fontWeight: '600', cursor: 'pointer', userSelect: 'none', margin: 0 }}>
+              Mark as Important (pins notice & emails residents immediately)
+            </label>
           </div>
 
           {/* Actions ------------------------------------------------------- */}
