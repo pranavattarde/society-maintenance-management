@@ -24,8 +24,8 @@ function validateRegister(data) {
     errors.push('Password must be at least 8 characters');
   }
 
-  if (!data.role || !VALID_ROLES.includes(data.role)) {
-    errors.push(`Role must be one of: ${VALID_ROLES.join(', ')}`);
+  if (data.role && data.role !== ROLES.RESIDENT) {
+    errors.push('Registration should never allow selecting ADMIN');
   }
 
   if (!data.flatNumber || data.flatNumber.trim().length === 0) {

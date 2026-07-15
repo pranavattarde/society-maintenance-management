@@ -141,3 +141,13 @@ export const ai = {
   generateText: (type, instruction, token) =>
     request('POST', '/ai/generate-text', { type, instruction }, token),
 };
+
+// ─── Users & Profiles ────────────────────────────────────────────────────────
+export const users = {
+  list: (params = {}, token) => {
+    const query = new URLSearchParams(params).toString();
+    return request('GET', `/users${query ? `?${query}` : ''}`, null, token);
+  },
+  updateRole: (id, role, token) => request('PATCH', `/users/${id}/role`, { role }, token),
+  updateProfile: (formData, token) => request('PATCH', '/users/profile', formData, token),
+};

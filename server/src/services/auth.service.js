@@ -54,7 +54,7 @@ async function registerUser(data) {
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
-      role,
+      role: 'RESIDENT',
       flatNumber: flatNumber.trim(),
       phone: phone?.trim() || null,
     },

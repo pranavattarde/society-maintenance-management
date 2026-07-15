@@ -11,6 +11,8 @@ import ComplaintDetail from './pages/ComplaintDetail';
 import CreateComplaint from './pages/CreateComplaint';
 import Notices from './pages/Notices';
 import CreateNotice from './pages/CreateNotice';
+import Settings from './pages/Settings';
+import UserManagement from './pages/UserManagement';
 
 export default function App() {
   return (
@@ -26,6 +28,7 @@ export default function App() {
           <Route path="/complaints" element={<Complaints />} />
           <Route path="/complaints/:id" element={<ComplaintDetail />} />
           <Route path="/notices" element={<Notices />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         {/* Authenticated routes — resident only */}
@@ -36,6 +39,7 @@ export default function App() {
         {/* Authenticated routes — admin only */}
         <Route element={<ProtectedRoute requiredRole={ROLES.ADMIN} />}>
           <Route path="/notices/new" element={<CreateNotice />} />
+          <Route path="/settings/users" element={<UserManagement />} />
         </Route>
 
         {/* Default redirect */}

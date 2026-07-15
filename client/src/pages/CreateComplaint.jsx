@@ -94,6 +94,7 @@ export default function CreateComplaint() {
   // 'idle' | 'checking' | 'found'
   const [dupStatus,  setDupStatus]  = useState('idle');
   const [dupMatches, setDupMatches] = useState([]);
+  const [dupChecked, setDupChecked] = useState(false);
 
   // ── AI Review state ─────────────────────────────────────────────────────────
   const [showSubmitReview, setShowSubmitReview] = useState(false);
@@ -215,6 +216,7 @@ export default function CreateComplaint() {
     // Reset duplicate detector
     setDupStatus('idle');
     setDupMatches([]);
+    setDupChecked(false);
     // Reset review screen
     setShowSubmitReview(false);
     // Reset success banner
@@ -259,17 +261,14 @@ export default function CreateComplaint() {
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    // Transition to review screen before actual submission
-    setShowSubmitReview(true);
-  }
+    if (dupChecked) {
+      setShowSubmitReview(true);
+      return;
+    }
 
-  async function handleFinalSubmit() {
-    setApiError('');
-
-    // ── Duplicate detection (non-blocking) ──────────────────────────────────
-    const combinedText = `${form.title} ${form.description}`.trim();
     setDupStatus('checking');
     setDupMatches([]);
+    const combinedText = `${form.title} ${form.description}`.trim();
 
     try {
       const response = await aiApi.detectDuplicates(combinedText, token);
@@ -361,37 +360,25 @@ export default function CreateComplaint() {
               <div className="ai-review-resolution-label">Estimated Resolution</div>
               <div className="ai-review-resolution-value">2–3 Working Days</div>
             </div>
-
-            {/* 🔍 Duplicate Detector — shown inside review step when similar complaints found */}
-            <DuplicateDetector
-              status={dupStatus}
-              matches={dupMatches}
-              onContinue={handleContinueAnyway}
-              onEdit={handleEditComplaint}
-            />
           </div>
 
           <div className="ai-review-actions">
-            {dupStatus !== 'found' && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setShowSubmitReview(false)}
-                  className="btn btn-secondary"
-                  disabled={submitting}
-                >
-                  Edit Complaint
-                </button>
-                <button
-                  type="button"
-                  onClick={handleFinalSubmit}
-                  className="btn btn-primary"
-                  disabled={submitting || dupStatus === 'checking'}
-                >
-                  {submitting ? 'Submitting ticket…' : dupStatus === 'checking' ? 'Checking for duplicates…' : 'Submit Complaint'}
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={() => setShowSubmitReview(false)}
+              className="btn btn-secondary"
+              disabled={submitting}
+            >
+              Edit Complaint
+            </button>
+            <button
+              type="button"
+              onClick={handleFinalSubmit}
+              className="btn btn-primary"
+              disabled={submitting}
+            >
+              {submitting ? 'Submitting ticket…' : 'Submit Complaint'}
+            </button>
           </div>
         </div>
       </div>
@@ -509,6 +496,30 @@ export default function CreateComplaint() {
               <p className="form-error">{fieldErrors.description}</p>
             )}
           </div>
+
+          {/* ✨ Analyze with AI manual click trigger button */}
+          {aiStatus === 'idle' && (
+            <div style={{ marginTop: '-4px', marginBottom: 'var(--space-4)' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  const description = form.description.trim();
+                  if (description.length < AI_MIN_CHARS) {
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      description: `Please enter at least ${AI_MIN_CHARS} characters to use the AI Assistant.`,
+                    }));
+                  } else {
+                    runAiAnalysis(description);
+                  }
+                }}
+                disabled={submitting}
+              >
+                ✨ Analyze with AI
+              </button>
+            </div>
+          )}
 
           {/* ✨ AI Assistant Panel — appears after 30 chars + 1.5s pause ---- */}
           <AIAssistantPanel

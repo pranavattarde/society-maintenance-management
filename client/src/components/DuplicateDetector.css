@@ -303,3 +303,220 @@
   color: var(--color-gray-400);
   font-style: italic;
 }
+
+/* ── View Summary Button ─────────────────────────────────────────────────── */
+
+.dup-view-summary-btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4338ca;
+  text-decoration: none;
+  border: 1px solid #c7d2fe;
+  border-radius: 4px;
+  padding: 4px 10px;
+  background: white;
+  white-space: nowrap;
+  transition: all 0.14s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+  font-family: var(--font-family);
+}
+
+.dup-view-summary-btn:hover {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  color: #3730a3;
+}
+
+/* ── Modal Window ────────────────────────────────────────────────────────── */
+
+.dup-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+  animation: dup-fade-in 0.2s ease-out;
+}
+
+@keyframes dup-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dup-modal-content {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: dup-scale-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--color-gray-200);
+}
+
+@keyframes dup-scale-up {
+  from { transform: scale(0.95) translateY(10px); }
+  to   { transform: scale(1) translateY(0); }
+}
+
+.dup-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-gray-150);
+  background-color: var(--color-gray-50);
+}
+
+.dup-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.dup-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.dup-modal-close:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-900);
+}
+
+.dup-modal-body {
+  padding: var(--space-6);
+}
+
+.dup-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 500px) {
+  .dup-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dup-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dup-modal-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+  letter-spacing: 0.05em;
+}
+
+.dup-modal-value {
+  font-size: 0.9rem;
+  color: var(--color-gray-800);
+  font-weight: 500;
+}
+
+.dup-modal-priority {
+  display: inline-flex;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.dup-modal-priority--high {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.dup-modal-priority--medium {
+  background-color: #ffedd5;
+  color: #ea580c;
+}
+
+.dup-modal-priority--low {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.dup-modal-divider {
+  height: 1px;
+  background-color: var(--color-gray-100);
+  margin: var(--space-4) 0 var(--space-6) 0;
+}
+
+.dup-modal-summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.dup-modal-summary-text {
+  font-size: 0.875rem;
+  color: var(--color-gray-700);
+  line-height: 1.5;
+  background: var(--color-gray-50);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-150);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.dup-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-4);
+}
+
+.dup-ownership-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+}
+
+.dup-ownership-badge--own {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.dup-ownership-badge--anonymous {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-200);
+}
+

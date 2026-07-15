@@ -270,6 +270,9 @@ function parseDuplicateResponse(rawContent, existingComplaints) {
         category:    complaint.category,
         status:      complaint.status,
         createdAt:   complaint.createdAt,
+        priority:    complaint.priority,
+        residentId:  complaint.residentId,
+        description: complaint.description,
       };
     })
     .sort((a, b) => b.similarity - a.similarity)
@@ -317,6 +320,8 @@ async function detectDuplicates(newComplaintText) {
       category:  true,
       status:    true,
       createdAt: true,
+      priority:  true,
+      residentId: true,
     },
   });
 

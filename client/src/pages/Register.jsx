@@ -220,26 +220,7 @@ export default function Register() {
             )}
           </div>
 
-          {/* Role ---------------------------------------------------------- */}
-          <div className="form-group">
-            <label htmlFor="reg-role" className="form-label">
-              I am a
-            </label>
-            <select
-              id="reg-role"
-              name="role"
-              className={`form-select${fieldErrors.role ? ' is-error' : ''}`}
-              value={form.role}
-              onChange={handleChange}
-              disabled={submitting}
-            >
-              <option value={ROLES.RESIDENT}>Resident</option>
-              <option value={ROLES.ADMIN}>Administrator</option>
-            </select>
-            {fieldErrors.role && (
-              <p className="form-error">{fieldErrors.role}</p>
-            )}
-          </div>
+
 
           {/* Flat Number --------------------------------------------------- */}
           <div className="form-group">

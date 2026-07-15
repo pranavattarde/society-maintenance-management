@@ -11,15 +11,10 @@
  *
  * IMPORTANT: Submission is NEVER blocked automatically.
  * The resident always decides via "Continue Anyway" or "Edit my complaint".
- *
- * Props:
- *   status      — 'idle' | 'checking' | 'found'
- *   matches     — [{complaintId, title, category, status, createdAt, similarity, reason}]
- *   onContinue  — () => void — user chose to submit despite duplicates
- *   onEdit      — () => void — user wants to revise their complaint
  */
 
-import { CATEGORY_LABELS, STATUS_LABELS } from '../utils/constants';
+import { useState } from 'react';
+import { CATEGORY_LABELS, STATUS_LABELS, PRIORITY_LABELS } from '../utils/constants';
 import './DuplicateDetector.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -45,6 +40,13 @@ function statusClass(status) {
   return status.toLowerCase();
 }
 
+/** Maps priority to estimated resolution time */
+function getResolutionTime(priority) {
+  if (priority === 'HIGH') return '1 Working Day';
+  if (priority === 'MEDIUM') return '2–3 Working Days';
+  return '5–7 Working Days';
+}
+
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 
 function WarningIcon() {
@@ -64,26 +66,6 @@ function WarningIcon() {
       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
       <line x1="12" y1="9" x2="12" y2="13" />
       <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
-}
-
-function ExternalLinkIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={10}
-      height={10}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   );
 }
@@ -120,7 +102,7 @@ function CheckingState() {
   );
 }
 
-function MatchCard({ match }) {
+function MatchCard({ match, onViewSummary }) {
   const level        = similarityLevel(match.similarity);
   const categoryLabel = CATEGORY_LABELS[match.category] || match.category;
   const statusLabel   = STATUS_LABELS[match.status]    || match.status;
@@ -130,7 +112,7 @@ function MatchCard({ match }) {
       {/* Similarity score */}
       <div className="dup-similarity-badge">
         <span className={`dup-similarity-pct dup-similarity-pct--${level}`}>
-          {match.similarity}%
+          {match.similarity}% Similar
         </span>
         <div className="dup-similarity-bar-track">
           <div
@@ -150,26 +132,22 @@ function MatchCard({ match }) {
             {formatDate(match.createdAt)}
           </span>
         </div>
-        {match.reason && (
-          <span className="dup-match-reason" title={match.reason}>{match.reason}</span>
-        )}
       </div>
 
-      {/* View link — opens in new tab to preserve form state */}
-      <a
-        href={`/complaints/${match.complaintId}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="dup-view-link"
-        aria-label={`View existing complaint: ${match.title}`}
+      {/* View Summary button — opens a secure summary modal */}
+      <button
+        type="button"
+        className="dup-view-summary-btn"
+        onClick={() => onViewSummary(match)}
+        aria-label={`View summary of complaint: ${match.title}`}
       >
-        View <ExternalLinkIcon />
-      </a>
+        View Summary
+      </button>
     </div>
   );
 }
 
-function FoundState({ matches, onContinue, onEdit }) {
+function FoundState({ matches, onContinue, onEdit, onViewSummary }) {
   return (
     <>
       {/* Header */}
@@ -184,7 +162,7 @@ function FoundState({ matches, onContinue, onEdit }) {
       {/* Match cards */}
       <div className="dup-match-list" role="list">
         {matches.map((m) => (
-          <MatchCard key={m.complaintId} match={m} />
+          <MatchCard key={m.complaintId} match={m} onViewSummary={onViewSummary} />
         ))}
       </div>
 
@@ -214,7 +192,15 @@ function FoundState({ matches, onContinue, onEdit }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function DuplicateDetector({ status, matches = [], onContinue, onEdit }) {
+export default function DuplicateDetector({
+  status,
+  matches = [],
+  onContinue,
+  onEdit,
+  currentUserId,
+}) {
+  const [selectedMatch, setSelectedMatch] = useState(null);
+
   if (status === 'idle') return null;
 
   return (
@@ -222,8 +208,100 @@ export default function DuplicateDetector({ status, matches = [], onContinue, on
       {status === 'checking' ? (
         <CheckingState />
       ) : status === 'found' && matches.length > 0 ? (
-        <FoundState matches={matches} onContinue={onContinue} onEdit={onEdit} />
+        <FoundState
+          matches={matches}
+          onContinue={onContinue}
+          onEdit={onEdit}
+          onViewSummary={setSelectedMatch}
+        />
       ) : null}
+
+      {/* Privacy-Preserving Duplicate Details Modal */}
+      {selectedMatch && (
+        <div className="dup-modal-overlay" role="dialog" aria-modal="true">
+          <div className="dup-modal-content">
+            <header className="dup-modal-header">
+              <h3 className="dup-modal-title">Similar Issue Details</h3>
+              <button
+                type="button"
+                className="dup-modal-close"
+                onClick={() => setSelectedMatch(null)}
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </header>
+
+            <div className="dup-modal-body">
+              <div className="dup-modal-grid">
+                <div className="dup-modal-field">
+                  <span className="dup-modal-label">Title</span>
+                  <span className="dup-modal-value">{selectedMatch.title}</span>
+                </div>
+
+                <div className="dup-modal-field">
+                  <span className="dup-modal-label">Category</span>
+                  <span className="dup-modal-value">{CATEGORY_LABELS[selectedMatch.category] || selectedMatch.category}</span>
+                </div>
+
+                <div className="dup-modal-field">
+                  <span className="dup-modal-label">Priority</span>
+                  <span className="dup-modal-value">
+                    <span className={`dup-modal-priority dup-modal-priority--${selectedMatch.priority.toLowerCase()}`}>
+                      {PRIORITY_LABELS[selectedMatch.priority] || selectedMatch.priority}
+                    </span>
+                  </span>
+                </div>
+
+                <div className="dup-modal-field">
+                  <span className="dup-modal-label">Status</span>
+                  <span className="dup-modal-value">
+                    <span className={`dup-tag dup-tag--${statusClass(selectedMatch.status)}`}>
+                      {STATUS_LABELS[selectedMatch.status] || selectedMatch.status}
+                    </span>
+                  </span>
+                </div>
+
+                <div className="dup-modal-field">
+                  <span className="dup-modal-label">Reported Date</span>
+                  <span className="dup-modal-value">{formatDate(selectedMatch.createdAt)}</span>
+                </div>
+
+                <div className="dup-modal-field">
+                  <span className="dup-modal-label">Est. Resolution Time</span>
+                  <span className="dup-modal-value">{getResolutionTime(selectedMatch.priority)}</span>
+                </div>
+              </div>
+
+              <div className="dup-modal-divider" />
+
+              <div className="dup-modal-summary-section">
+                <span className="dup-modal-label">Issue Description / Summary</span>
+                <p className="dup-modal-summary-text">{selectedMatch.description}</p>
+              </div>
+
+              <div className="dup-modal-footer">
+                {selectedMatch.residentId === currentUserId ? (
+                  <div className="dup-ownership-badge dup-ownership-badge--own">
+                    Submitted by You
+                  </div>
+                ) : (
+                  <div className="dup-ownership-badge dup-ownership-badge--anonymous">
+                    Resident Identity Protected
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setSelectedMatch(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
