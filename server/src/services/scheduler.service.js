@@ -17,34 +17,32 @@ async function checkOverdueComplaints() {
       Date.now() - OVERDUE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
     );
 
-    // 1. Mark unresolved complaints created before threshold as overdue
-    // Only target those where isOverdue is currently false to avoid redundant writes.
-    const markOverdueResult = await prisma.complaint.updateMany({
-      where: {
-        status: { not: STATUS.RESOLVED },
-        createdAt: { lt: overdueThreshold },
-        isOverdue: false,
-      },
-      data: {
-        isOverdue: true,
-      },
-    });
+    // 1. Run both status checks inside an atomic transaction
+    const [markOverdueResult, clearOverdueResult] = await prisma.$transaction([
+      prisma.complaint.updateMany({
+        where: {
+          status: { not: STATUS.RESOLVED },
+          createdAt: { lt: overdueThreshold },
+          isOverdue: false,
+        },
+        data: {
+          isOverdue: true,
+        },
+      }),
+      prisma.complaint.updateMany({
+        where: {
+          status: STATUS.RESOLVED,
+          isOverdue: true,
+        },
+        data: {
+          isOverdue: false,
+        },
+      })
+    ]);
 
     if (markOverdueResult.count > 0) {
       console.log(`[Scheduler] Marked ${markOverdueResult.count} complaints as overdue.`);
     }
-
-    // 2. Clear overdue flags for resolved complaints
-    // Only target those where isOverdue is currently true to avoid redundant writes.
-    const clearOverdueResult = await prisma.complaint.updateMany({
-      where: {
-        status: STATUS.RESOLVED,
-        isOverdue: true,
-      },
-      data: {
-        isOverdue: false,
-      },
-    });
 
     if (clearOverdueResult.count > 0) {
       console.log(`[Scheduler] Cleared overdue flag for ${clearOverdueResult.count} resolved complaints.`);

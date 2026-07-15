@@ -13,8 +13,17 @@ const ApiError = require('../utils/ApiError');
  * @param {import('express').NextFunction} next
  */
 function errorHandler(err, req, res, next) {
-  const statusCode = err instanceof ApiError ? err.statusCode : 500;
-  const message = err.message || 'Internal Server Error';
+  let statusCode = err instanceof ApiError ? err.statusCode : 500;
+  let message = err.message || 'Internal Server Error';
+
+  // Handle Multer upload limits and type errors gracefully
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    statusCode = 400;
+    message = 'File size limit exceeded. Maximum file size allowed is 5 MB.';
+  } else if (err.name === 'MulterError') {
+    statusCode = 400;
+    message = `File upload error: ${err.message}`;
+  }
 
   if (process.env.NODE_ENV === 'development') {
     console.error(`[${new Date().toISOString()}] ${statusCode} — ${message}`);

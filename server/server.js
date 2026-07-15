@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+const validateEnv = require('./src/config/validateEnv');
+validateEnv(); // Verify all required keys are populated before proceeding
+
 const app = require('./app');
 const prisma = require('./src/config/db');
 const { initScheduler } = require('./src/services/scheduler.service');
