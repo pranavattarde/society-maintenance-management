@@ -79,7 +79,7 @@ A web-based platform designed to coordinate maintenance requests and community a
 
 ## Demo Video
 
-- **Walkthrough Demonstration:** [Demo Video Placeholder](https://youtu.be/iCsUh7rX-tA)
+[![Society Maintenance Management Demo](https://img.youtube.com/vi/iCsUh7rX-tA/hqdefault.jpg)](https://youtu.be/iCsUh7rX-tA)
 
 ## Project Architecture
 
