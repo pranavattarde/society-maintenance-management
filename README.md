@@ -49,23 +49,23 @@ A web-based platform designed to coordinate maintenance requests and community a
 ## Screenshots
 
 1. **Resident Dashboard**
-   ![Resident Dashboard](https://placehold.co/800x450?text=Resident+Dashboard)
+   ![Resident Dashboard](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_162009_z9uczk.png)
 
 2. **Create Complaint with AI Assistant**
-   ![Create Complaint with AI Assistant](https://placehold.co/800x450?text=Create+Complaint+with+AI+Assistant)
+   ![Create Complaint with AI Assistant](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_162059_sydpxq.png)
 
 3. **Admin Dashboard**
-   ![Admin Dashboard](https://placehold.co/800x450?text=Admin+Dashboard)
+   ![Admin Dashboard](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_161800_z8meyw.png)
 
 4. **Complaint Management & Detail View**
-   ![Complaint Detail](https://placehold.co/800x450?text=Complaint+Management+/+Complaint+Detail)
+   ![Complaint Detail](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199411/Screenshot_2026-07-16_161905_pypv0g.png)
 
 5. **Notice Board & User Management**
-   ![Notice Board & User Management](https://placehold.co/800x450?text=Notice+Board+/+User+Management)
+   ![Notice Board & User Management](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199411/Screenshot_2026-07-16_161928_w8t5fe.png)
 
 ## Demo Video
 
-- **Walkthrough Demonstration:** [Demo Video Placeholder](https://placehold.co/800x450?text=Demo+Video+Placeholder)
+- **Walkthrough Demonstration:** [Demo Video Placeholder](https://youtu.be/iCsUh7rX-tA)
 
 ## Project Architecture
 
