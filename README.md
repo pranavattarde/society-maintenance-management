@@ -1,3 +1,4 @@
+# Society Maintenance Management System
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=node.js)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)
@@ -5,8 +6,6 @@
 ![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)
 ![Groq AI](https://img.shields.io/badge/Groq-AI-black)
 ![License](https://img.shields.io/badge/License-MIT-green)
-
-# Society Maintenance Management System
 
 A web-based platform designed to coordinate maintenance requests and community announcements within a residential building complex. The system enables residents to submit complaints, check for duplicate issues, and upload attachments, while providing administrators with a central management dashboard, audit trails, and pinned community notices.
 
