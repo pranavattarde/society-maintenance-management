@@ -1,3 +1,11 @@
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=node.js)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)
+![Groq AI](https://img.shields.io/badge/Groq-AI-black)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 # Society Maintenance Management System
 
 A web-based platform designed to coordinate maintenance requests and community announcements within a residential building complex. The system enables residents to submit complaints, check for duplicate issues, and upload attachments, while providing administrators with a central management dashboard, audit trails, and pinned community notices.
@@ -46,22 +54,29 @@ A web-based platform designed to coordinate maintenance requests and community a
 - **Deployment:** Vercel (Frontend), Render (Backend), Neon (Serverless Database)
 - **Containerization:** Docker, Docker Compose
 
-## Screenshots
+## Application Walkthrough
 
-1. **Resident Dashboard**
-   ![Resident Dashboard](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_162009_z9uczk.png)
+### 1. Dashboards
 
-2. **Create Complaint with AI Assistant**
-   ![Create Complaint with AI Assistant](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_162059_sydpxq.png)
+| Resident Dashboard | Admin Dashboard |
+|--------------------|-----------------|
+| <img src="https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_162009_z9uczk.png" width="460"> | <img src="https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_161800_z8meyw.png" width="460"> |
 
-3. **Admin Dashboard**
-   ![Admin Dashboard](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_161800_z8meyw.png)
+---
 
-4. **Complaint Management & Detail View**
-   ![Complaint Detail](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199411/Screenshot_2026-07-16_161905_pypv0g.png)
+### 2. Complaint Creation & Management
 
-5. **Notice Board & User Management**
-   ![Notice Board & User Management](https://res.cloudinary.com/n8ql5bui/image/upload/v1784199411/Screenshot_2026-07-16_161928_w8t5fe.png)
+| Create Complaint with AI Assistant | Complaint Management & Detail View |
+|------------------------------------|------------------------------------|
+| <img src="https://res.cloudinary.com/n8ql5bui/image/upload/v1784199412/Screenshot_2026-07-16_162059_sydpxq.png" width="460"> | <img src="https://res.cloudinary.com/n8ql5bui/image/upload/v1784199411/Screenshot_2026-07-16_161905_pypv0g.png" width="460"> |
+
+---
+
+### 3. Notice Board & User Management
+
+<p align="center">
+  <img src="https://res.cloudinary.com/n8ql5bui/image/upload/v1784199411/Screenshot_2026-07-16_161928_w8t5fe.png" width="700">
+</p>
 
 ## Demo Video
 
